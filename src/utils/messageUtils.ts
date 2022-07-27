@@ -4,30 +4,22 @@ var moment = require("moment");
 import momentDurationFormatSetup from "moment-duration-format";
 momentDurationFormatSetup(moment);
 
-export function printLeaderboard(
+const MAX_FIELD_LENGTH = 1024;
+
+export async function printLeaderboard(
   leaderboard: ILeaderboard,
   channel: TextBasedChannel
 ) {
   if (!leaderboard || !channel) return;
   const entries = parseEntries(leaderboard.entries);
 
-  const embeds = {
-    color: 0x0099ff,
-    title: leaderboard.name,
+  const embeds = generateEmbeds(leaderboard, entries);
 
-    description: leaderboard.description,
-    fields: [
-      {
-        name: "Standings:",
-        value: entries,
-        inline: true,
-      },
-    ],
-    footer: {
-      text: `LeaderboardID: ${leaderboard.id}`,
-    },
-  };
-  channel.send({ embeds: [embeds] });
+  try {
+    await channel.send({ embeds: [embeds] });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export function printFilteredLeaderboard(
@@ -35,30 +27,19 @@ export function printFilteredLeaderboard(
   channel: TextBasedChannel
 ) {
   if (!leaderboard || !channel) return;
-  console.log("2");
 
   const entries = parseEntries(getBestPerPerson(leaderboard));
 
-  const embeds = {
-    color: 0x0099ff,
-    title: leaderboard.name,
-
-    description: leaderboard.description,
-    fields: [
-      {
-        name: "Standings:",
-        value: entries,
-        inline: true,
-      },
-    ],
-    footer: {
-      text: `LeaderboardID: ${leaderboard.id}`,
-    },
-  };
-  channel.send({ embeds: [embeds] });
+  const embeds = generateEmbeds(leaderboard, entries);
+  try {
+    channel.send({ embeds: [embeds] });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
-function parseEntries(entries: IEntry[]): string {
+function parseEntries(entries: IEntry[]): string[] {
+  let resultArray = new Array<string>;
   let result = "";
 
   entries.sort((firstEntry, secondEntry) => {
@@ -66,12 +47,19 @@ function parseEntries(entries: IEntry[]): string {
   });
 
   entries.forEach((entry, index) => {
-    result += parseOneEntry(entry, index + 1);
+    const parsedEntry = parseOneEntry(entry, index + 1);
+    if (result.length + parsedEntry.length > MAX_FIELD_LENGTH){
+      resultArray.push(result);
+      result = "";
+    }
+    result += parsedEntry;
     result += "\n";
   });
-
+  
   if (!result) result = "No entires found";
-  return result;
+  resultArray.push(result)
+
+  return resultArray;
 }
 
 function parseOneEntry(entry: IEntry, position: number): string {
@@ -94,4 +82,26 @@ function parseTime(time: number): string {
 
 function mentionUser(userId: string): string {
   return `<@${userId}>`;
+}
+
+function generateEmbeds(leaderboard: ILeaderboard, entriesArray: string[]) {
+  const embeds = {
+    color: 0xfe6f27,
+    title: leaderboard.name,
+
+    description: leaderboard.description,
+    fields: new Array(),
+    footer: {
+      text: `LeaderboardID: ${leaderboard.id}`,
+    },
+  };
+  for (const entries of entriesArray) {
+    embeds.fields.push({
+      name: "Standings:",
+      value: entries,
+      inline: true,
+    });
+  }
+
+  return embeds;
 }
