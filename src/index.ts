@@ -52,7 +52,7 @@ const commands: Array<command> = [
     description: "Deletes a Leaderboard",
     options: [
       {
-        name: "leaderboarid",
+        name: "leaderboardid",
         description: "Id of the Leaderboard that shall be deleted",
         type: 3,
         required: true,
@@ -64,7 +64,7 @@ const commands: Array<command> = [
     description: "Add an entry to the leaderboard",
     options: [
       {
-        name: "leaderboarid",
+        name: "leaderboardid",
         description: "Id of the Leaderboard to which the entry shall be added",
         type: 3,
         required: true,
@@ -81,6 +81,12 @@ const commands: Array<command> = [
         type: 6,
         required: false,
       },
+      {
+        name: "notes",
+        description: "Any Notes to add? e.g. Car, or conditons",
+        type: 3,
+        required: false,
+      },
     ],
   },
   {
@@ -88,7 +94,7 @@ const commands: Array<command> = [
     description: "Deletes an entry from the leaderboard",
     options: [
       {
-        name: "leaderboarid",
+        name: "leaderboardid",
         description: "The leaderboard ID of the entry to be deleted",
         type: 3,
         required: true,
@@ -115,16 +121,14 @@ client.login(process.env.BOT_TOKEN).then(() => {
   console.log("Bot logged in successfully");
 });
 
-const rest = new REST({ version: "9" }).setToken(
-  process.env.DISCORD_TOKEN || ""
-);
+const rest = new REST({ version: "9" }).setToken(process.env.BOT_TOKEN || "");
 
 client.on("ready", () => {
   (async () => {
     try {
       console.log("Started refreshing application (/) commands.");
       await rest
-        .put(Routes.applicationCommands(process.env.APP_ID || ""), {
+        .put(Routes.applicationCommands(process.env.APPLICATION_ID || ""), {
           body: commands,
         })
         .then(console.log);
@@ -135,23 +139,23 @@ client.on("ready", () => {
   })();
 });
 
-client.on("interactionCreate", (interaction) => {
+client.on("interactionCreate", async (interaction) => {
   if (interaction.isCommand()) {
     switch (interaction.commandName) {
       case "deleteentry":
-        deleteentry(interaction);
+        await deleteentry(interaction);
         break;
       case "createentry":
-        createentry(interaction);
+        await createentry(interaction);
         break;
       case "deleteleaderboard":
-        deleteleaderboard(interaction);
+        await deleteleaderboard(interaction);
         break;
       case "createleaderboard":
-        createleaderboard(interaction);
+        await createleaderboard(interaction);
         break;
       case "cloneleaderboard":
-        cloneleaderboard(interaction);
+        await cloneleaderboard(interaction);
         break;
       default:
         break;
@@ -161,10 +165,3 @@ client.on("interactionCreate", (interaction) => {
     }
   }
 });
-
-require("./utils/dataUtils").createleaderboard("Test", "Testdescription");
-require("./utils/dataUtils").addEntry(
-  "Testentry",
-  1,
-  "62dc40480adf3f89b5713c70"
-);

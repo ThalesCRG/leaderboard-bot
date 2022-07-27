@@ -1,6 +1,21 @@
-import { Interaction } from "discord.js";
+import { CommandInteraction, Interaction } from "discord.js";
+import { getLeaderboard } from "../utils/dataUtils";
+import { printFilteredLeaderboard, printLeaderboard } from "../utils/messageUtils";
 
-export default async function (interaction: Interaction) {}
+export default async function (interaction: Interaction) {
+  if (!interaction) return;
+  const command = interaction as CommandInteraction;
+  const leaderboardId = command.options.getString("leaderboardid");
+
+  if (!leaderboardId) return;
+
+  const leaderboard = await getLeaderboard(leaderboardId);
+  if (!leaderboard) return;
+
+  if (!command.channel) return;
+
+  printFilteredLeaderboard(leaderboard, command.channel);
+}
 
 // {
 //     name: "cloneleaderboard",

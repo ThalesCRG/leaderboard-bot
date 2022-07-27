@@ -1,7 +1,24 @@
-import { Interaction } from "discord.js";
+import { CommandInteraction, Interaction } from "discord.js";
+import { createleaderboard } from "../utils/dataUtils";
+import { printLeaderboard } from "../utils/messageUtils";
 
-export default async function (interaction: Interaction) {}
+export default async function (interaction: Interaction) {
+  if (!interaction) return;
+  const command = interaction as CommandInteraction;
+  const leaderboardName = command.options.getString("leaderboardname");
+  const description = command.options.getString("description");
+  const publicFlag = command.options.getBoolean("public") || false;
+  if (!leaderboardName || !description) return;
 
+  const leaderboard = await createleaderboard(
+    leaderboardName,
+    description,
+    publicFlag
+  );
+
+  if (!command.channel || !leaderboard) return;
+  printLeaderboard(leaderboard, command.channel);
+}
 
 // {
 //     name: "createleaderboard",
