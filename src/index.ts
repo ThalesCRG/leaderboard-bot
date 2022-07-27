@@ -1,16 +1,55 @@
 import { Client, Intents } from "discord.js";
-import cloneleaderboard from "./commands/cloneleaderboard";
+import { REST } from "@discordjs/rest";
+import { Routes } from "discord-api-types/rest/v10";
 import command from "./commands/commands";
+import cloneleaderboard from "./commands/cloneleaderboard";
 import createentry from "./commands/createentry";
 import createleaderboard from "./commands/createleaderboard";
 import deleteentry from "./commands/deleteentry";
 import deleteleaderboard from "./commands/deleteleaderboard";
-import { REST } from "@discordjs/rest";
-import { Routes } from "discord-api-types/rest/v10";
+import addallowence from "./commands/addallowence";
+import removeallowence from "./commands/removeallowence";
 
 require("dotenv").config();
 
 const commands: Array<command> = [
+  {
+    name: "addallowence",
+    description: "You can add other people to be able to add entries!",
+    options: [
+      {
+        name: "leaderboardid",
+        description: "To what leaderboard shall the user be added?",
+        type: 3,
+        required: true,
+      },
+      {
+        name: "user",
+        description: "Who shall be able to interact with your leaderboard?",
+        required: true,
+        type: 6,
+      },
+    ],
+  },
+  {
+    name: "removeallowence",
+    description: "You can remove other people to be able to add entries!",
+    options: [
+      {
+        name: "leaderboardid",
+        description: "To what leaderboard shall the user be removed?",
+        type: 3,
+        required: true,
+      },
+      {
+        name: "user",
+        description:
+          "Who shall not be able to interact with your leaderboard anymore?",
+        required: true,
+        type: 6,
+      },
+    ],
+  },
   {
     name: "cloneleaderboard",
     description: "Creates a Leaderboardmessage for your Channel",
@@ -20,6 +59,13 @@ const commands: Array<command> = [
         description: "The ID of the leaderboard that shall be cloned",
         required: true,
         type: 3,
+      },
+      {
+        name: "allentries",
+        description:
+          "Do you want to see all entries instead of the best per Driver?",
+        required: false,
+        type: 5,
       },
     ],
   },
@@ -40,8 +86,8 @@ const commands: Array<command> = [
         required: true,
       },
       {
-        name: "public",
-        description: "Can everybody submit a time?",
+        name: "protected",
+        description: "Should only you be able to add changes?",
         type: 5,
         required: false,
       },
@@ -156,6 +202,12 @@ client.on("interactionCreate", async (interaction) => {
         break;
       case "cloneleaderboard":
         await cloneleaderboard(interaction);
+        break;
+      case "addallowence":
+        await addallowence(interaction);
+        break;
+      case "removeallowence":
+        await removeallowence(interaction);
         break;
       default:
         break;

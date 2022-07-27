@@ -1,6 +1,9 @@
 import { CommandInteraction, Interaction } from "discord.js";
 import { getLeaderboard } from "../utils/dataUtils";
-import { printFilteredLeaderboard, printLeaderboard } from "../utils/messageUtils";
+import {
+  printFilteredLeaderboard,
+  printLeaderboard,
+} from "../utils/messageUtils";
 
 export default async function (interaction: Interaction) {
   if (!interaction) return;
@@ -14,7 +17,9 @@ export default async function (interaction: Interaction) {
 
   if (!command.channel) return;
 
-  printFilteredLeaderboard(leaderboard, command.channel);
+  if (command.options.getBoolean("allentries"))
+    await printLeaderboard(leaderboard, command.channel);
+  else await printFilteredLeaderboard(leaderboard, command.channel);
 }
 
 // {

@@ -15,10 +15,11 @@ export interface IEntry extends Document {
 
 export interface ILeaderboard extends Document {
   name: string;
-  creatorId?: string;
+  creatorId: string;
   guildId?: string;
   description?: string;
   protected?: boolean;
+  allowedList?: string[];
   entries: IEntry[];
 }
 
@@ -30,11 +31,12 @@ const entrySchema = new Schema({
 
 const leaderboardSchema = new Schema({
   name: { type: String, required: true },
-  description: String,
-  creatorId: String,
+  description: { type: String, required: true },
+  creatorId: { type: String, required: true },
   guildId: String,
   entries: [entrySchema],
   protected: Boolean,
+  allowedList: [String],
 });
 
 const Leaderboard = model<ILeaderboard>("Leaderboard", leaderboardSchema);
@@ -43,12 +45,14 @@ const Entry = model<IEntry>("Entry", entrySchema);
 export async function createleaderboard(
   name: string,
   description: string,
-  publicFlag: boolean = false
+  executorId: string,
+  protectedFlag: boolean = false
 ): Promise<ILeaderboard | undefined> {
   let leaderboard: ILeaderboard = new Leaderboard();
   leaderboard.name = name;
   leaderboard.description = description;
-  leaderboard.protected = publicFlag;
+  leaderboard.protected = protectedFlag;
+  leaderboard.creatorId = executorId;
   try {
     const result = await leaderboard.save();
     console.log(`Created new Leaderboard: ${JSON.stringify(result)}`);
@@ -76,7 +80,12 @@ export async function addEntry(
     const leaderboard = await Leaderboard.findById(leaderboardId);
     if (!leaderboard) throw new Error("leaderboard not found");
     const allowedPersons = getAllowedPersons(leaderboard);
-    if (allowedPersons && !allowedPersons.find((userId) => userId === executor))
+    console.log(`Allowed: ${allowedPersons} user: ${executor}`);
+
+    if (
+      leaderboard.protected &&
+      !allowedPersons.find((userId) => userId === executor)
+    )
       throw new Error("executor not allowed");
 
     leaderboard.entries.push(entry);
@@ -93,6 +102,7 @@ export async function getLeaderboard(
 ): Promise<ILeaderboard | undefined> {
   try {
     const leaderboard = await Leaderboard.findById(leaderboardId);
+
     if (!leaderboard) throw new Error("leaderboard not found");
 
     return leaderboard;
@@ -132,11 +142,47 @@ function getBestPerPersonByEntries(entries: IEntry[]): Array<IEntry> {
   return result;
 }
 
-function getAllowedPersons(
-  leaderboard: ILeaderboard
-): Array<string | undefined> {
-  let result: Array<string | undefined> = [];
-  if (leaderboard.protected) return [leaderboard.creatorId];
+export function getAllowedPersons(leaderboard: ILeaderboard): Array<string> {
+  let result: Array<string> = [];
+  if (leaderboard.protected) {
+    result.push(leaderboard.creatorId);
+    if (leaderboard.allowedList)
+      Array.prototype.push.apply(result, leaderboard.allowedList);
+  }
 
   return result;
+}
+
+export async function addAllowence(
+  leaderboardId: string,
+  userId: string,
+  executor: string
+) {
+  const leaderboard = await Leaderboard.findById(leaderboardId);
+  if (!leaderboard) throw new Error("Leaderboard not found!");
+  if (leaderboard.creatorId !== executor) throw new Error("Not allowed.");
+
+  if (!leaderboard.allowedList) leaderboard.allowedList = [userId];
+  else {
+    leaderboard.allowedList.push(userId);
+  }
+  await leaderboard.save();
+}
+
+export async function removeAllowence(
+  leaderboardId: string,
+  userId: string,
+  executor: string
+) {
+  const leaderboard = await Leaderboard.findById(leaderboardId);
+  if (!leaderboard) throw new Error("Leaderboard not found!");
+  if (leaderboard.creatorId !== executor) throw new Error("Not allowed.");
+
+  if (!leaderboard.allowedList) return;
+  if (leaderboard.allowedList.find((entry) => entry === userId))
+    leaderboard.allowedList = leaderboard.allowedList.filter(
+      (entry) => entry !== userId
+    );
+
+  await leaderboard.save();
 }

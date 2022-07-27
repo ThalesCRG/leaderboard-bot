@@ -7,13 +7,14 @@ export default async function (interaction: Interaction) {
   const command = interaction as CommandInteraction;
   const leaderboardName = command.options.getString("leaderboardname");
   const description = command.options.getString("description");
-  const publicFlag = command.options.getBoolean("public") || false;
+  const protectedFlag = command.options.getBoolean("protected") || false;
   if (!leaderboardName || !description) return;
 
   const leaderboard = await createleaderboard(
     leaderboardName,
     description,
-    publicFlag
+    command.user.id,
+    protectedFlag
   );
 
   if (!command.channel || !leaderboard) return;
