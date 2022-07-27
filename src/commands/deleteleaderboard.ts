@@ -1,5 +1,5 @@
 import { CommandInteraction, Interaction } from "discord.js";
-import { deleteLeaderboard } from "../utils/dataUtils";
+import { deleteLeaderboard } from "../database/database";
 
 export default async function (interaction: Interaction) {
   if (!interaction) return;

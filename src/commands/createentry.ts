@@ -1,5 +1,5 @@
 import { CommandInteraction, Interaction } from "discord.js";
-import { addEntry, getLeaderboard } from "../utils/dataUtils";
+import { addEntry, getLeaderboard } from "../database/database";
 import {
   printFilteredLeaderboard,
   printLeaderboard,

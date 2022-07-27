@@ -1,5 +1,5 @@
 import { CommandInteraction, Interaction } from "discord.js";
-import { getAllLeaderboardsOfGuild } from "../utils/dataUtils";
+import { getAllLeaderboardsOfGuild } from "../database/database";
 import { printFilteredLeaderboard } from "../utils/messageUtils";
 
 export default async function (interaction: Interaction) {

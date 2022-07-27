@@ -1,5 +1,6 @@
-import { getBestPerPerson, IEntry, ILeaderboard } from "./dataUtils";
-import { TextBasedChannel, MessageOptions, MessageEmbed } from "discord.js";
+import { IEntry, ILeaderboard } from "../database/database-types";
+import { getBestPerPerson } from '../database/database';
+import { TextBasedChannel } from "discord.js";
 var moment = require("moment");
 import momentDurationFormatSetup from "moment-duration-format";
 momentDurationFormatSetup(moment);

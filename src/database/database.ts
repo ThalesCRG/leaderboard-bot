@@ -1,4 +1,5 @@
-import { model, Schema, Model, Document, connect, connection } from "mongoose";
+import { connect, connection } from "mongoose";
+import { Entry, IEntry, ILeaderboard, Leaderboard } from "./database-types";
 require("dotenv").config();
 
 console.log(process.env.DB_URI);
@@ -7,41 +8,6 @@ connection.once("open", () => {
   console.log("Connected to MongoDB");
 });
 
-export interface IEntry extends Document {
-  userId: string;
-  time: number;
-  notes?: string;
-}
-
-export interface ILeaderboard extends Document {
-  name: string;
-  creatorId: string;
-  guildId?: string;
-  description?: string;
-  protected?: boolean;
-  allowedList?: string[];
-  entries: IEntry[];
-}
-
-const entrySchema = new Schema({
-  userId: { type: String, required: true },
-  time: { type: Number, required: true },
-  notes: String,
-});
-
-const leaderboardSchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  creatorId: { type: String, required: true },
-  guildId: String,
-  entries: [entrySchema],
-  protected: Boolean,
-  allowedList: [String],
-});
-
-const Leaderboard = model<ILeaderboard>("Leaderboard", leaderboardSchema);
-const Entry = model<IEntry>("Entry", entrySchema);
-
 export async function createleaderboard(
   name: string,
   description: string,
@@ -49,7 +15,7 @@ export async function createleaderboard(
   guildId: string,
   protectedFlag: boolean = false
 ): Promise<ILeaderboard | undefined> {
-  let leaderboard: ILeaderboard = new Leaderboard();
+  let leaderboard = new Leaderboard();
   leaderboard.name = name;
   leaderboard.description = description;
   leaderboard.protected = protectedFlag;
@@ -187,9 +153,9 @@ export async function removeAllowence(
   if (leaderboard.creatorId !== executor) throw new Error("Not allowed.");
 
   if (!leaderboard.allowedList) return;
-  if (leaderboard.allowedList.find((entry) => entry === userId))
+  if (leaderboard.allowedList.find((entry: any) => entry === userId))
     leaderboard.allowedList = leaderboard.allowedList.filter(
-      (entry) => entry !== userId
+      (entry: any) => entry !== userId
     );
 
   await leaderboard.save();

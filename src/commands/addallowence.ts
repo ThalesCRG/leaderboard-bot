@@ -1,5 +1,5 @@
 import { CommandInteraction, Interaction } from "discord.js";
-import { addAllowence } from "../utils/dataUtils";
+import { addAllowence } from "../database/database";
 
 export default async function (interaction: Interaction) {
   if (!interaction) return;
