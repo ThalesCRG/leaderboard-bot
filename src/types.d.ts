@@ -1,10 +1,9 @@
-export default interface command {
+export interface Command {
   name: string;
   description: string;
   options?: Options[];
 }
-
-interface Options {
+export interface Options {
   name: string;
   description: string;
   type: number;
