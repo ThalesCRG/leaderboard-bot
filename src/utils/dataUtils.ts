@@ -46,6 +46,7 @@ export async function createleaderboard(
   name: string,
   description: string,
   executorId: string,
+  guildId: string,
   protectedFlag: boolean = false
 ): Promise<ILeaderboard | undefined> {
   let leaderboard: ILeaderboard = new Leaderboard();
@@ -53,6 +54,8 @@ export async function createleaderboard(
   leaderboard.description = description;
   leaderboard.protected = protectedFlag;
   leaderboard.creatorId = executorId;
+  leaderboard.guildId = guildId;
+
   try {
     const result = await leaderboard.save();
     console.log(`Created new Leaderboard: ${JSON.stringify(result)}`);
@@ -95,6 +98,11 @@ export async function addEntry(
   } catch (error) {
     console.log(error);
   }
+}
+
+export async function getAllLeaderboardsOfGuild(guildId: string) {
+  const leaderboards = await Leaderboard.find({ guildId: guildId });
+  return leaderboards;
 }
 
 export async function getLeaderboard(
@@ -185,4 +193,21 @@ export async function removeAllowence(
     );
 
   await leaderboard.save();
+}
+
+export async function deleteLeaderboard(
+  leaderboardId: string,
+  executor: string
+) {
+  const leaderboard = await Leaderboard.findById(leaderboardId);
+  if (!leaderboard) throw new Error("Leaderboard not found!");
+
+  if (leaderboard.creatorId !== executor)
+    throw new Error("Not authorized to deleteLeaderboard");
+
+  try {
+    await leaderboard.remove();
+  } catch (error) {
+    console.log(error);
+  }
 }

@@ -8,6 +8,7 @@ import createleaderboard from "./commands/createleaderboard";
 import deleteentry from "./commands/deleteentry";
 import deleteleaderboard from "./commands/deleteleaderboard";
 import addallowence from "./commands/addallowence";
+import allleaderboards from "./commands/allleaderboards";
 import removeallowence from "./commands/removeallowence";
 
 require("dotenv").config();
@@ -30,6 +31,11 @@ const commands: Array<command> = [
         type: 6,
       },
     ],
+  },
+  {
+    name: "allleaderboards",
+    description:
+      "posts all leaderboards that were created on this discord server",
   },
   {
     name: "removeallowence",
@@ -208,6 +214,9 @@ client.on("interactionCreate", async (interaction) => {
         break;
       case "removeallowence":
         await removeallowence(interaction);
+        break;
+      case "allleaderboards":
+        await allleaderboards(interaction);
         break;
       default:
         break;

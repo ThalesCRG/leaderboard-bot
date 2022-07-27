@@ -1,6 +1,22 @@
-import { Interaction } from "discord.js";
+import { CommandInteraction, Interaction } from "discord.js";
+import { deleteLeaderboard } from "../utils/dataUtils";
 
-export default async function (interaction: Interaction) {}
+export default async function (interaction: Interaction) {
+  if (!interaction) return;
+  const command = interaction as CommandInteraction;
+
+  const user = command.user.id;
+  if (!user) return;
+
+  const leaderboardId = command.options.getString("leaderboardid");
+  if (!leaderboardId) throw new Error("LeaderboardID not provided");
+
+  try {
+    await deleteLeaderboard(leaderboardId, user);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 //  {
 //     name: "deleteleaderboard",

@@ -27,7 +27,6 @@ export default async function (interaction: Interaction) {
 
   if (!command.channel || !leaderboard) return;
   console.log(`${leaderboard.entries}`);
-  console.log("1");
 
   printFilteredLeaderboard(leaderboard, command.channel);
 }

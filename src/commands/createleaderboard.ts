@@ -8,12 +8,14 @@ export default async function (interaction: Interaction) {
   const leaderboardName = command.options.getString("leaderboardname");
   const description = command.options.getString("description");
   const protectedFlag = command.options.getBoolean("protected") || false;
-  if (!leaderboardName || !description) return;
+  
+  if (!leaderboardName || !description || !command.guildId) return;
 
   const leaderboard = await createleaderboard(
     leaderboardName,
     description,
     command.user.id,
+    command.guildId,
     protectedFlag
   );
 
