@@ -1,5 +1,5 @@
 import { CommandInteraction, Interaction } from "discord.js";
-import { addAllowence } from "../utils/dataUtils";
+import { removeAllowence } from "../../database/database";
 
 export default async function (interaction: Interaction) {
   if (!interaction) return;
@@ -15,12 +15,11 @@ export default async function (interaction: Interaction) {
 
   const executor = command.user.id;
 
-  await addAllowence(leaderboard, user.id, executor);
-
+  await removeAllowence(leaderboard, user.id, executor);
   try {
     if (command.isRepliable())
       await command.reply({
-        content: `Added <@${user.id}> to Leaderboard ${leaderboard}`,
+        content: `Removed <@${user.id}> from Leaderboard ${leaderboard}`,
         ephemeral: true,
       });
   } catch (error) {
