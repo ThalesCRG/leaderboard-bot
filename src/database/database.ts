@@ -1,13 +1,5 @@
 import { connect, connection, model, Schema } from "mongoose";
 import { IEntry, ILeaderboard } from "./database-types";
-require("dotenv").config();
-
-console.log(`trying to connect to db at ${process.env.DB_URI}`);
-
-connect(process.env.DB_URI || "");
-connection.once("open", () => {
-  console.log("Connected to MongoDB");
-});
 
 const entrySchema = new Schema({
   userId: { type: String, required: true },
@@ -27,6 +19,28 @@ const leaderboardSchema = new Schema({
 
 const Leaderboard = model<ILeaderboard>("Leaderboard", leaderboardSchema);
 const Entry = model<IEntry>("Entry", entrySchema);
+
+export async function initConnection(connectionString: string) {
+  if (!connectionString) {
+    return console.error("connection string is not set. check env DB_URI");
+  }
+
+  console.log(`trying to connect to db at ${connectionString}`);
+
+  try {
+    await connect(connectionString);
+  } catch (error) {
+    console.error(`initial connection to db failed`, error);
+    throw "database connection failed";
+  }
+
+  connection.once("open", () => {
+    console.log("successfully connected to database");
+  });
+  connection.once("error", (error) => {
+    console.log("connection error on database", error);
+  });
+}
 
 export async function createleaderboard(
   name: string,
