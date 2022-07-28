@@ -25,11 +25,8 @@ const leaderboardSchema = new Schema({
   allowedList: [String],
 });
 
-export const Leaderboard = model<ILeaderboard>(
-  "Leaderboard",
-  leaderboardSchema
-);
-export const Entry = model<IEntry>("Entry", entrySchema);
+const Leaderboard = model<ILeaderboard>("Leaderboard", leaderboardSchema);
+const Entry = model<IEntry>("Entry", entrySchema);
 
 export async function createleaderboard(
   name: string,
