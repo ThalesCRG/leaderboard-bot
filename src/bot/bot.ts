@@ -1,14 +1,14 @@
 import { CacheType, Client, Intents, Interaction } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
-import cloneleaderboard from "../commands/cloneleaderboard";
-import createentry from "../commands/createentry";
-import createleaderboard from "../commands/createleaderboard";
-import deleteentry from "../commands/deleteentry";
-import deleteleaderboard from "../commands/deleteleaderboard";
-import addallowence from "../commands/addallowence";
-import allleaderboards from "../commands/allleaderboards";
-import removeallowence from "../commands/removeallowence";
+import cloneleaderboard from "./handlers/cloneleaderboard";
+import createentry from "./handlers/createentry";
+import createleaderboard from "./handlers/createleaderboard";
+import deleteentry from "./handlers/deleteentry";
+import deleteleaderboard from "./handlers/deleteleaderboard";
+import addallowence from "./handlers/addallowence";
+import allleaderboards from "./handlers/allleaderboards";
+import removeallowence from "./handlers/removeallowence";
 
 import { commands } from "./commands";
 

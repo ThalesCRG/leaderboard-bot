@@ -1,9 +1,9 @@
 import { CommandInteraction, Interaction } from "discord.js";
-import { addEntry, getLeaderboard } from "../database/database";
+import { addEntry, getLeaderboard } from "../../database/database";
 import {
   printFilteredLeaderboard,
   printLeaderboard,
-} from "../utils/messageUtils";
+} from "../../utils/messageUtils";
 
 export default async function (interaction: Interaction) {
   if (!interaction) return;
