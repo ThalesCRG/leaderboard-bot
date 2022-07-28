@@ -1,5 +1,5 @@
 import { IEntry, ILeaderboard } from "../database/database-types";
-import { getBestPerPerson } from '../database/database';
+import { getBestPerPerson } from "../database/database";
 import { TextBasedChannel } from "discord.js";
 var moment = require("moment");
 import momentDurationFormatSetup from "moment-duration-format";
@@ -40,7 +40,7 @@ export function printFilteredLeaderboard(
 }
 
 function parseEntries(entries: IEntry[]): string[] {
-  let resultArray = new Array<string>;
+  let resultArray = new Array<string>();
   let result = "";
 
   entries.sort((firstEntry, secondEntry) => {
@@ -49,16 +49,16 @@ function parseEntries(entries: IEntry[]): string[] {
 
   entries.forEach((entry, index) => {
     const parsedEntry = parseOneEntry(entry, index + 1);
-    if (result.length + parsedEntry.length > MAX_FIELD_LENGTH){
+    if (result.length + parsedEntry.length > MAX_FIELD_LENGTH) {
       resultArray.push(result);
       result = "";
     }
     result += parsedEntry;
     result += "\n";
   });
-  
+
   if (!result) result = "No entires found";
-  resultArray.push(result)
+  resultArray.push(result);
 
   return resultArray;
 }
@@ -85,7 +85,10 @@ function mentionUser(userId: string): string {
   return `<@${userId}>`;
 }
 
-function generateEmbeds(leaderboard: ILeaderboard, entriesArray: string[]) {
+function generateEmbeds(
+  leaderboard: ILeaderboard & { id?: string },
+  entriesArray: string[]
+) {
   const embeds = {
     color: 0xfe6f27,
     title: leaderboard.name,

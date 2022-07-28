@@ -1,12 +1,35 @@
-import { connect, connection } from "mongoose";
-import { Entry, IEntry, ILeaderboard, Leaderboard } from "./database-types";
+import { connect, connection, model, Schema } from "mongoose";
+import { IEntry, ILeaderboard } from "./database-types";
 require("dotenv").config();
 
-console.log(process.env.DB_URI);
+console.log(`trying to connect to db at ${process.env.DB_URI}`);
+
 connect(process.env.DB_URI || "");
 connection.once("open", () => {
   console.log("Connected to MongoDB");
 });
+
+const entrySchema = new Schema({
+  userId: { type: String, required: true },
+  time: { type: Number, required: true },
+  notes: String,
+});
+
+const leaderboardSchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  creatorId: { type: String, required: true },
+  guildId: String,
+  entries: [entrySchema],
+  protected: Boolean,
+  allowedList: [String],
+});
+
+export const Leaderboard = model<ILeaderboard>(
+  "Leaderboard",
+  leaderboardSchema
+);
+export const Entry = model<IEntry>("Entry", entrySchema);
 
 export async function createleaderboard(
   name: string,
