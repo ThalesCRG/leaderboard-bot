@@ -1,4 +1,10 @@
-import { CacheType, Client, Intents, Interaction } from "discord.js";
+import {
+  CacheType,
+  Client,
+  CommandInteraction,
+  Intents,
+  Interaction,
+} from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
 import cloneleaderboard from "./handlers/cloneleaderboard";
@@ -73,7 +79,7 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
       default:
         break;
     }
-    if (!interaction.replied) {
+    if (!(interaction as CommandInteraction).isRepliable()) {
       interaction.reply({ content: "👍", ephemeral: true });
     }
   }
