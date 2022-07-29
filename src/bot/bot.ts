@@ -4,22 +4,13 @@ import {
   CommandInteraction,
   Intents,
   Interaction,
-  InteractionReplyOptions,
   MessagePayload,
   WebhookEditMessageOptions,
 } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
-import cloneleaderboard from "./handlers/cloneleaderboard";
-import createentry from "./handlers/createentry";
-import createleaderboard from "./handlers/createleaderboard";
-import deleteleaderboard from "./handlers/deleteleaderboard";
-import addallowence from "./handlers/addallowence";
-import allleaderboards from "./handlers/allleaderboards";
-import removeallowence from "./handlers/removeallowence";
 
-import { commands } from "./commands";
-import help from "./handlers/help";
+import handlers, { commandList } from "./handlers";
 
 const client = new Client({
   intents: [
@@ -41,7 +32,7 @@ export async function initConnection(token: string, appId: string) {
   console.log("Started refreshing application (/) commands.");
 
   const response = (await rest.put(Routes.applicationCommands(appId), {
-    body: commands,
+    body: commandList,
   })) as Array<{ id: string; name: string }>;
 
   client.on("interactionCreate", handleInteractions);
@@ -54,37 +45,44 @@ export async function initConnection(token: string, appId: string) {
 
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
   if (interaction.isCommand()) {
-    await interaction.reply({ content: "wait a second", ephemeral: true });
-    let reply: string | MessagePayload | WebhookEditMessageOptions = "";
-    switch (interaction.commandName) {
-      case "createentry":
-        reply = await createentry(interaction);
-        break;
-      case "deleteleaderboard":
-        reply = await deleteleaderboard(interaction);
-        break;
-      case "createleaderboard":
-        reply = await createleaderboard(interaction);
-        break;
-      case "cloneleaderboard":
-        reply = await cloneleaderboard(interaction);
-        break;
-      case "addallowence":
-        reply = await addallowence(interaction);
-        break;
-      case "removeallowence":
-        reply = await removeallowence(interaction);
-        break;
-      case "allleaderboards":
-        reply = await allleaderboards(interaction);
-        break;
-      case "help":
-        reply = await help(interaction);
-        break;
-      default:
-        break;
+    // TODO: this is not needed, is it?
+    if (!interaction.guild || !interaction.user?.id) {
+      throw new Error("what shall i do if mandatory data is not present?");
     }
-    changeReply(interaction, reply);
+
+    console.log(`trying to use handler for command ${interaction.commandName}`);
+
+    const definition = commandList.find(
+      (cmd) => cmd.name === interaction.commandName
+    );
+
+    if (!definition) {
+      return console.error(
+        `could not find command definition for ${interaction.commandName}`
+      );
+    }
+
+    if (!handlers[interaction.commandName]) {
+      return console.error(
+        `missing handler implementation for ${interaction.commandName}.`
+      );
+    }
+
+    await interaction.reply({ content: "wait a second", ephemeral: true });
+
+    const response: string | MessagePayload | WebhookEditMessageOptions =
+      await handlers[interaction.commandName](
+        interaction.options,
+        interaction.user?.id,
+        interaction.guildId
+      );
+
+    console.log(
+      `handler for ${interaction.commandName} returned with response`,
+      response
+    );
+
+    changeReply(interaction, response);
   }
 };
 

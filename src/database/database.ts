@@ -1,4 +1,5 @@
 import { connect, connection, model, Schema } from "mongoose";
+import { CreateLeaderboard } from "../bot/handlers/createleaderboard";
 import { IEntry, ILeaderboard } from "./database-types";
 
 const entrySchema = new Schema({
@@ -47,25 +48,24 @@ export async function initConnection(connectionString: string) {
 }
 
 export async function createleaderboard(
-  name: string,
-  description: string,
-  executorId: string,
-  guildId: string,
-  protectedFlag: boolean = false
-): Promise<ILeaderboard | undefined> {
+  model: CreateLeaderboard,
+  user: string,
+  guild: string
+): Promise<string> {
   let leaderboard = new Leaderboard();
-  leaderboard.name = name;
-  leaderboard.description = description;
-  leaderboard.protected = protectedFlag;
-  leaderboard.creatorId = executorId;
-  leaderboard.guildId = guildId;
+  leaderboard.name = model.name;
+  leaderboard.description = model.description;
+  leaderboard.protected = model.protected;
+  leaderboard.creatorId = user;
+  leaderboard.guildId = guild;
 
   try {
     const result = await leaderboard.save();
     console.log(`Created new Leaderboard: ${JSON.stringify(result)}`);
-    return result;
+    return result.id as string;
   } catch (error) {
     console.log(error);
+    throw new Error(`could not persist leaderboard with name ${model.name}`);
   }
 }
 

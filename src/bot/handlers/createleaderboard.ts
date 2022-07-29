@@ -1,53 +1,53 @@
-import { CommandInteraction, Interaction } from "discord.js";
-import { createleaderboard } from "../../database/database";
-import { printLeaderboard } from "../../utils/messageUtils";
+import * as database from "../../database/database";
+import { Command, DataHolder, DiscordDataTypes } from "../../types";
 
-export default async function (interaction: Interaction): Promise<string> {
-  if (!interaction) return "There was an error. Please try again";
-  const command = interaction as CommandInteraction;
-  const leaderboardName = command.options.getString("leaderboardname");
-  const description = command.options.getString("description");
-  const protectedFlag = command.options.getBoolean("protected") || false;
-
-  if (!leaderboardName || !description || !command.guildId)
-    return "There was an error. Please try again";
-
-  const leaderboard = await createleaderboard(
-    leaderboardName,
-    description,
-    command.user.id,
-    command.guildId,
-    protectedFlag
-  );
-
-  if (!command.channel || !leaderboard)
-    return "There was an error. Please try again";
-  printLeaderboard(leaderboard, command.channel);
-
-  return `Leaderboard ${leaderboard.name} successfully created.`;
+export class CreateLeaderboard {
+  name: string;
+  description: string;
+  protected: boolean;
+  constructor(data: DataHolder) {
+    this.name = data.getString("ledaerboardname") as string;
+    this.description = data.getString("description") as string;
+    this.protected = data.getBoolean("public") || false;
+  }
+  get isValid() {
+    return this.name.length > 0 && this.description.length > 0;
+  }
 }
 
-// {
-//     name: "createleaderboard",
-//     description: "Creates a Leaderboard and posts it in your Channel",
-//     options: [
-//       {
-//         name: "leaderboardname",
-//         description: "The name of the leaderboard",
-//         type: 3,
-//         required: true,
-//       },
-//       {
-//         name: "description",
-//         description: "Description of the leaderboard",
-//         type: 3,
-//         required: true,
-//       },
-//       {
-//         name: "public",
-//         description: "Can everybody submit a time?",
-//         type: 5,
-//         required: false,
-//       },
-//     ],
-//   },
+export default async function (data: DataHolder, user: string, guild: string) {
+  const model = new CreateLeaderboard(data);
+
+  if (!model.isValid) {
+    return console.error("so nicht mein junge!");
+  }
+
+  const id = await database.createleaderboard(model, user, guild);
+
+  return `Leaderboard with ${id} created.`;
+}
+
+export const createLeaderboardOption: Command = {
+  name: "createleaderboard",
+  description: "Creates a Leaderboard and posts it in your Channel",
+  options: [
+    {
+      name: "leaderboardname",
+      description: "The name of the leaderboard",
+      type: DiscordDataTypes.STRING,
+      required: true,
+    },
+    {
+      name: "description",
+      description: "Description of the leaderboard",
+      type: DiscordDataTypes.STRING,
+      required: true,
+    },
+    {
+      name: "public",
+      description: "Can everybody submit a time?",
+      type: DiscordDataTypes.BOOLEAN,
+      required: false,
+    },
+  ],
+};

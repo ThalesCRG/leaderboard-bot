@@ -1,3 +1,5 @@
+import { CacheType, CommandInteractionOptionResolver } from "discord.js";
+
 export interface Command {
   name: string;
   description: string;
@@ -17,4 +19,15 @@ export interface Choices {
   name: string;
   type: number;
   value?: string | number;
+}
+
+export type DataHolder = Omit<
+  CommandInteractionOptionResolver<CacheType>,
+  "getMessage" | "getFocused"
+>;
+
+export enum DiscordDataTypes {
+  "STRING" = 3,
+  "NUMBER" = 4,
+  "BOOLEAN" = 5,
 }
