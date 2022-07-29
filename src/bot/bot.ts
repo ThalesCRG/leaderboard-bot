@@ -10,6 +10,7 @@ import allleaderboards from "./handlers/allleaderboards";
 import removeallowence from "./handlers/removeallowence";
 
 import { commands } from "./commands";
+import help from "./handlers/help";
 
 const client = new Client({
   intents: [
@@ -65,6 +66,9 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
         break;
       case "allleaderboards":
         await allleaderboards(interaction);
+        break;
+      case "help":
+        await help(interaction);
         break;
       default:
         break;

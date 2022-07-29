@@ -129,5 +129,7 @@ export const commands: Array<Command> = [
     ],
   },
   {
+    name: "help",
+    description: "Prints a help message",
   },
 ];
