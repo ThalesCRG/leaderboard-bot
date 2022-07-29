@@ -18,7 +18,7 @@ DB_URI=
 
 ## run
 
-`npm start`
+`npm start` or `npm run watch`
 
 ### dev tools
 
