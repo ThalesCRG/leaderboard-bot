@@ -1,20 +1,22 @@
 import { CommandInteraction, Interaction } from "discord.js";
 import { deleteLeaderboard } from "../../database/database";
 
-export default async function (interaction: Interaction) {
-  if (!interaction) return;
+export default async function (interaction: Interaction): Promise<string> {
+  if (!interaction) return "There was an error. Please try again";
   const command = interaction as CommandInteraction;
 
   const user = command.user.id;
-  if (!user) return;
+  if (!user) return "There was an error. Please try again";
 
   const leaderboardId = command.options.getString("leaderboardid");
-  if (!leaderboardId) throw new Error("LeaderboardID not provided");
+  if (!leaderboardId) return "Error: LeaderboardID not provided";
 
   try {
     await deleteLeaderboard(leaderboardId, user);
+    return `Deleted Leaderboard ${leaderboardId}`;
   } catch (error) {
     console.log(error);
+    return "There was an error. Please try again";
   }
 }
 

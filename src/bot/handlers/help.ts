@@ -1,23 +1,16 @@
 import {
-  CommandInteraction,
   Interaction,
-  InteractionReplyOptions,
-  Message,
-  MessageEmbed,
   MessageEmbedOptions,
+  WebhookEditMessageOptions,
 } from "discord.js";
 
 export default async function (interaction: Interaction) {
-  if (!interaction) return;
-  const command = interaction as CommandInteraction;
+  if (!interaction) return "There was an error. Please try again";
 
-  try {
-    if (command.isRepliable()) {
-      command.reply({ embeds: [messegeEmbed], ephemeral: true });
-    }
-  } catch (error) {
-    console.log(error);
-  }
+  return {
+    content: "We're glad to help:",
+    embeds: [messegeEmbed],
+  } as WebhookEditMessageOptions;
 }
 const messegeEmbed: MessageEmbedOptions = {
   title: "RDC Leaderboard Bot - Help Message",

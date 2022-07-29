@@ -2,14 +2,15 @@ import { CommandInteraction, Interaction } from "discord.js";
 import { createleaderboard } from "../../database/database";
 import { printLeaderboard } from "../../utils/messageUtils";
 
-export default async function (interaction: Interaction) {
-  if (!interaction) return;
+export default async function (interaction: Interaction): Promise<string> {
+  if (!interaction) return "There was an error. Please try again";
   const command = interaction as CommandInteraction;
   const leaderboardName = command.options.getString("leaderboardname");
   const description = command.options.getString("description");
   const protectedFlag = command.options.getBoolean("protected") || false;
 
-  if (!leaderboardName || !description || !command.guildId) return;
+  if (!leaderboardName || !description || !command.guildId)
+    return "There was an error. Please try again";
 
   const leaderboard = await createleaderboard(
     leaderboardName,
@@ -19,8 +20,11 @@ export default async function (interaction: Interaction) {
     protectedFlag
   );
 
-  if (!command.channel || !leaderboard) return;
+  if (!command.channel || !leaderboard)
+    return "There was an error. Please try again";
   printLeaderboard(leaderboard, command.channel);
+
+  return `Leaderboard ${leaderboard.name} successfully created.`;
 }
 
 // {

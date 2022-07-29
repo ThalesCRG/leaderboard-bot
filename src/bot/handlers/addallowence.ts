@@ -1,31 +1,23 @@
 import { CommandInteraction, Interaction } from "discord.js";
 import { addAllowence } from "../../database/database";
 
-export default async function (interaction: Interaction) {
-  if (!interaction) return;
+export default async function (interaction: Interaction): Promise<string> {
+  if (!interaction) return "There was an error. Please try again";
   const command = interaction as CommandInteraction;
 
   const user = command.options.getUser("user");
   if (!user) {
-    throw new Error("User not provided.");
+    return "There was an error. Please try again";
   }
 
   const leaderboard = command.options.getString("leaderboardid");
-  if (!leaderboard) throw new Error("Leaderboard Id not provided.");
+  if (!leaderboard) return "There was an error. Please try again";
 
   const executor = command.user.id;
 
   await addAllowence(leaderboard, user.id, executor);
 
-  try {
-    if (command.isRepliable())
-      await command.reply({
-        content: `Added <@${user.id}> to Leaderboard ${leaderboard}`,
-        ephemeral: true,
-      });
-  } catch (error) {
-    console.log(error);
-  }
+  return `Added <@${user.id}> to Leaderboard ${leaderboard}`;
 }
 
 // {

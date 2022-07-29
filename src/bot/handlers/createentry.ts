@@ -5,17 +5,17 @@ import {
   printLeaderboard,
 } from "../../utils/messageUtils";
 
-export default async function (interaction: Interaction) {
-  if (!interaction) return;
+export default async function (interaction: Interaction): Promise<string> {
+  if (!interaction) return "There was an error. Please try again";
   const command = interaction as CommandInteraction;
 
   const leaderboardId = command.options.getString("leaderboardid");
   const time = command.options.getString("time");
-  if (!leaderboardId || !time) return;
+  if (!leaderboardId || !time) return "There was an error. Please try again";
 
   let driver = command.options.getUser("driver");
   if (!driver) driver = command.user;
-  if (!driver && !command.user) return;
+  if (!driver && !command.user) return "There was an error. Please try again";
 
   const executor = command.user.id;
   const notes = command.options.getString("notes");
@@ -25,10 +25,12 @@ export default async function (interaction: Interaction) {
 
   const leaderboard = await getLeaderboard(leaderboardId);
 
-  if (!command.channel || !leaderboard) return;
+  if (!command.channel || !leaderboard)
+    return "There was an error. Please try again";
   console.log(`${leaderboard.entries}`);
 
   printFilteredLeaderboard(leaderboard, command.channel);
+  return `Added entry for <@${driver.id}> to leaderboard: ${leaderboard.name}`;
 }
 
 function parseTime(time: string): number {

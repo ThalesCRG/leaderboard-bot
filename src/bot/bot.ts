@@ -4,6 +4,9 @@ import {
   CommandInteraction,
   Intents,
   Interaction,
+  InteractionReplyOptions,
+  MessagePayload,
+  WebhookEditMessageOptions,
 } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
@@ -51,36 +54,48 @@ export async function initConnection(token: string, appId: string) {
 
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
   if (interaction.isCommand()) {
+    await interaction.reply({ content: "wait a second", ephemeral: true });
+    let reply: string | MessagePayload | WebhookEditMessageOptions = "";
     switch (interaction.commandName) {
       case "createentry":
-        await createentry(interaction);
+        reply = await createentry(interaction);
         break;
       case "deleteleaderboard":
-        await deleteleaderboard(interaction);
+        reply = await deleteleaderboard(interaction);
         break;
       case "createleaderboard":
-        await createleaderboard(interaction);
+        reply = await createleaderboard(interaction);
         break;
       case "cloneleaderboard":
-        await cloneleaderboard(interaction);
+        reply = await cloneleaderboard(interaction);
         break;
       case "addallowence":
-        await addallowence(interaction);
+        reply = await addallowence(interaction);
         break;
       case "removeallowence":
-        await removeallowence(interaction);
+        reply = await removeallowence(interaction);
         break;
       case "allleaderboards":
-        await allleaderboards(interaction);
+        reply = await allleaderboards(interaction);
         break;
       case "help":
-        await help(interaction);
+        reply = await help(interaction);
         break;
       default:
         break;
     }
-    if (!(interaction as CommandInteraction).isRepliable()) {
-      interaction.reply({ content: "👍", ephemeral: true });
-    }
+    changeReply(interaction, reply);
   }
 };
+
+async function changeReply(
+  interaction: CommandInteraction,
+  content: string | MessagePayload | WebhookEditMessageOptions
+): Promise<void> {
+  if (!content) return;
+  try {
+    interaction.editReply(content);
+  } catch (error) {
+    console.log("Could not change reply - error: ", error);
+  }
+}
