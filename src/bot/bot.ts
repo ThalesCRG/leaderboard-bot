@@ -4,7 +4,6 @@ import { Routes } from "discord-api-types/rest/v10";
 import cloneleaderboard from "./handlers/cloneleaderboard";
 import createentry from "./handlers/createentry";
 import createleaderboard from "./handlers/createleaderboard";
-import deleteentry from "./handlers/deleteentry";
 import deleteleaderboard from "./handlers/deleteleaderboard";
 import addallowence from "./handlers/addallowence";
 import allleaderboards from "./handlers/allleaderboards";
@@ -46,9 +45,6 @@ export async function initConnection(token: string, appId: string) {
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
   if (interaction.isCommand()) {
     switch (interaction.commandName) {
-      case "deleteentry":
-        await deleteentry(interaction);
-        break;
       case "createentry":
         await createentry(interaction);
         break;
