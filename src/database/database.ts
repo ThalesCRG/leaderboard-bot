@@ -25,7 +25,11 @@ export async function initConnection(connectionString: string) {
     return console.error("connection string is not set. check env DB_URI");
   }
 
-  console.log(`trying to connect to db at ${connectionString}`);
+  const uri = connectionString.slice(
+    connectionString.indexOf("@") + 1,
+    connectionString.indexOf("?")
+  );
+  console.log(`trying to connect to db ${uri}`);
 
   try {
     await connect(connectionString);
