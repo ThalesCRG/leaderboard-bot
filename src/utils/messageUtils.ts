@@ -1,4 +1,4 @@
-import { IEntry, ILeaderboard } from "../database/database-types";
+import { IEntryEntity, ILeaderboardntity } from "../database/database-types";
 import { getBestPerPerson } from "../database/database";
 import { TextBasedChannel } from "discord.js";
 var moment = require("moment");
@@ -8,7 +8,7 @@ momentDurationFormatSetup(moment);
 const MAX_FIELD_LENGTH = 1024;
 
 export async function printLeaderboard(
-  leaderboard: ILeaderboard,
+  leaderboard: ILeaderboardntity,
   channel: TextBasedChannel
 ) {
   if (!leaderboard || !channel) return;
@@ -24,7 +24,7 @@ export async function printLeaderboard(
 }
 
 export function printFilteredLeaderboard(
-  leaderboard: ILeaderboard,
+  leaderboard: ILeaderboardntity,
   channel: TextBasedChannel
 ) {
   if (!leaderboard || !channel) return;
@@ -39,7 +39,7 @@ export function printFilteredLeaderboard(
   }
 }
 
-function parseEntries(entries: IEntry[]): string[] {
+function parseEntries(entries: IEntryEntity[]): string[] {
   let resultArray = new Array<string>();
   let result = "";
 
@@ -63,7 +63,7 @@ function parseEntries(entries: IEntry[]): string[] {
   return resultArray;
 }
 
-function parseOneEntry(entry: IEntry, position: number): string {
+function parseOneEntry(entry: IEntryEntity, position: number): string {
   let result = "";
 
   if (entry) {
@@ -86,7 +86,7 @@ function mentionUser(userId: string): string {
 }
 
 function generateEmbeds(
-  leaderboard: ILeaderboard & { id?: string },
+  leaderboard: ILeaderboardntity & { id?: string },
   entriesArray: string[]
 ) {
   const embeds = {

@@ -1,6 +1,6 @@
 import { connect, connection, model, Schema } from "mongoose";
 import { CreateLeaderboard } from "../bot/handlers/createleaderboard";
-import { IEntry, ILeaderboard } from "./database-types";
+import { IEntryEntity, ILeaderboardntity } from "./database-types";
 
 const entrySchema = new Schema({
   userId: { type: String, required: true },
@@ -18,8 +18,8 @@ const leaderboardSchema = new Schema({
   allowedList: [String],
 });
 
-const Leaderboard = model<ILeaderboard>("Leaderboard", leaderboardSchema);
-const Entry = model<IEntry>("Entry", entrySchema);
+const Leaderboard = model<ILeaderboardntity>("Leaderboard", leaderboardSchema);
+const Entry = model<IEntryEntity>("Entry", entrySchema);
 
 export async function initConnection(connectionString: string) {
   if (!connectionString) {
@@ -111,7 +111,7 @@ export async function getAllLeaderboardsOfGuild(guildId: string) {
 
 export async function getLeaderboard(
   leaderboardId: string
-): Promise<ILeaderboard | undefined> {
+): Promise<ILeaderboardntity | undefined> {
   try {
     const leaderboard = await Leaderboard.findById(leaderboardId);
 
@@ -124,9 +124,9 @@ export async function getLeaderboard(
 }
 
 export function getBestPerPerson(
-  leaderboard?: ILeaderboard,
-  entries?: Array<IEntry>
-): Array<IEntry> {
+  leaderboard?: ILeaderboardntity,
+  entries?: Array<IEntryEntity>
+): Array<IEntryEntity> {
   if (entries) {
     return getBestPerPersonByEntries(entries);
   } else {
@@ -135,16 +135,18 @@ export function getBestPerPerson(
   return [];
 }
 
-function getBestPerPersonByEntries(entries: IEntry[]): Array<IEntry> {
-  let result: IEntry[] = [];
+function getBestPerPersonByEntries(
+  entries: IEntryEntity[]
+): Array<IEntryEntity> {
+  let result: IEntryEntity[] = [];
 
-  entries.forEach((element: IEntry) => {
+  entries.forEach((element: IEntryEntity) => {
     if (!result.find((entry) => entry.userId === element.userId)) {
       const userEntries = entries.filter(
-        (entry: IEntry) => entry.userId === element.userId
+        (entry: IEntryEntity) => entry.userId === element.userId
       );
       result.push(
-        userEntries?.reduce((acc: IEntry, entry: IEntry) =>
+        userEntries?.reduce((acc: IEntryEntity, entry: IEntryEntity) =>
           acc.time > entry.time ? entry : acc
         )
       );
@@ -154,7 +156,9 @@ function getBestPerPersonByEntries(entries: IEntry[]): Array<IEntry> {
   return result;
 }
 
-export function getAllowedPersons(leaderboard: ILeaderboard): Array<string> {
+export function getAllowedPersons(
+  leaderboard: ILeaderboardntity
+): Array<string> {
   let result: Array<string> = [];
   if (leaderboard.protected) {
     result.push(leaderboard.creatorId);
