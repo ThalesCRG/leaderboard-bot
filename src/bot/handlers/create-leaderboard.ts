@@ -1,5 +1,6 @@
 import * as database from "../../database/database";
 import { Command, DataHolder, DiscordDataTypes } from "../../types";
+import { CommandNames } from "../command-names";
 
 export class CreateLeaderboard {
   name: string;
@@ -45,7 +46,7 @@ enum CreateLeaderboardOption {
 }
 
 export const createLeaderboardCommand: Command = {
-  name: "createleaderboard",
+  name: CommandNames.createLeaderboard,
   description: "Creates a Leaderboard and posts it in your Channel",
   options: [
     {
