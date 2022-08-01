@@ -1,4 +1,9 @@
-import { CacheType, CommandInteractionOptionResolver } from "discord.js";
+import {
+  CacheType,
+  CommandInteractionOptionResolver,
+  MessagePayload,
+  WebhookEditMessageOptions,
+} from "discord.js";
 
 export interface Command {
   name: string;
@@ -25,6 +30,11 @@ export type DataHolder = Omit<
   CommandInteractionOptionResolver<CacheType>,
   "getMessage" | "getFocused"
 >;
+
+export type HanlderResponse =
+  | string
+  | MessagePayload
+  | WebhookEditMessageOptions;
 
 export enum DiscordDataTypes {
   "STRING" = 3,

@@ -4,8 +4,6 @@ import {
   CommandInteraction,
   Intents,
   Interaction,
-  MessagePayload,
-  WebhookEditMessageOptions,
 } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
@@ -14,6 +12,7 @@ import legacyCommands from "./legacy-commands.json";
 
 import handlers, { commandList, legacyHandlers } from "./handlers";
 import { useLegacyInteractionHandling } from "./legacy-interaction-handler";
+import { HanlderResponse } from "../types";
 
 const client = new Client({
   intents: [
@@ -58,8 +57,7 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
 
     await interaction.reply({ content: "wait a second", ephemeral: true });
 
-    let response: string | MessagePayload | WebhookEditMessageOptions =
-      "no response retrieved";
+    let response: HanlderResponse = "no response retrieved";
 
     if (handlers[interaction.commandName] === undefined) {
       console.log(
@@ -104,7 +102,7 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
 
 export async function changeReply(
   interaction: CommandInteraction,
-  content: string | MessagePayload | WebhookEditMessageOptions
+  content: HanlderResponse
 ): Promise<void> {
   if (!content) return;
   try {
