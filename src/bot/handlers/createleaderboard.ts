@@ -8,7 +8,7 @@ export class CreateLeaderboard {
   constructor(data: DataHolder) {
     this.name = data.getString("leaderboardname") as string;
     this.description = data.getString("description") as string;
-    this.protected = data.getBoolean("public") || false;
+    this.protected = data.getBoolean("protected") || false;
   }
   get isValid() {
     return this.name?.length > 0 && this.description?.length > 0;
@@ -47,7 +47,7 @@ export const createLeaderboardOption: Command = {
       required: true,
     },
     {
-      name: "public",
+      name: "protected",
       description: "Can everybody submit a time?",
       type: DiscordDataTypes.BOOLEAN,
       required: false,
