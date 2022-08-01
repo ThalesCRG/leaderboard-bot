@@ -1,6 +1,7 @@
 import { Command } from "../../types";
-import createleaderboard, {
-  createLeaderboardOption,
+import {
+  createLeaderboardCommand,
+  createLeaderboardHandler,
 } from "./createleaderboard";
 import cloneleaderboard from "./cloneleaderboard";
 import allleaderboards from "./allleaderboards";
@@ -10,10 +11,13 @@ import addallowence from "./addallowence";
 import removeallowence from "./removeallowence";
 import help from "./help";
 
-export const commandList: Array<Command> = [createLeaderboardOption];
+export const commandList: Array<Command> = [createLeaderboardCommand];
 
+/**
+ * maps the registered command name (e.g. /createleaderboard) to the handler implementation.
+ */
 const handlers: { [key: string]: any } = {
-  createleaderboard,
+  [createLeaderboardCommand.name]: createLeaderboardHandler,
 };
 
 export const legacyHandlers: { [key: string]: any } = {
