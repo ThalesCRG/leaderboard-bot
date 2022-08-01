@@ -2,7 +2,7 @@ import { Command } from "../../types";
 import {
   createLeaderboardCommand,
   createLeaderboardHandler,
-} from "./createleaderboard";
+} from "./create-leaderboard";
 import cloneleaderboard from "./cloneleaderboard";
 import allleaderboards from "./allleaderboards";
 import deleteleaderboard from "./deleteleaderboard";

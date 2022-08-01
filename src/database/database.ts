@@ -1,5 +1,5 @@
 import { connect, connection, model, Schema } from "mongoose";
-import { CreateLeaderboard } from "../bot/handlers/createleaderboard";
+import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
 import { IEntryEntity, ILeaderboardntity } from "./database-types";
 
 const entrySchema = new Schema({
