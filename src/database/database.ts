@@ -47,26 +47,28 @@ export async function initConnection(connectionString: string) {
   });
 }
 
-export async function createleaderboard(
+export async function saveLeaderboard(
   model: CreateLeaderboard,
-  user: string,
-  guild: string
+  creatorId: string,
+  guildId: string
 ): Promise<string> {
-  let leaderboard = new Leaderboard();
-  leaderboard.name = model.name;
-  leaderboard.description = model.description;
-  leaderboard.protected = model.protected;
-  leaderboard.creatorId = user;
-  leaderboard.guildId = guild;
+  const leaderboard = new Leaderboard({
+    name: model.name,
+    description: model.description,
+    protected: model.protected,
+    creatorId,
+    guildId,
+  });
 
   try {
     const result = await leaderboard.save();
     console.log(`Created new Leaderboard: ${JSON.stringify(result)}`);
-    return result.id as string;
   } catch (error) {
     console.log(error);
     throw new Error(`could not persist leaderboard with name ${model.name}`);
   }
+
+  return leaderboard.id as string;
 }
 
 export async function addEntry(

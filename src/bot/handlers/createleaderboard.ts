@@ -25,7 +25,7 @@ export default async function (data: DataHolder, user: string, guild: string) {
     );
   }
 
-  const id = await database.createleaderboard(model, user, guild);
+  const id = await database.saveLeaderboard(model, user, guild);
 
   return `Leaderboard with ${id} created.`;
 }
