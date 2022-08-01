@@ -66,7 +66,7 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
       response = await useLegacyInteractionHandling(interaction);
     } else {
       console.log(
-        `trying to use modern  handler for command ${interaction.commandName}`
+        `trying to use modern handler for command ${interaction.commandName}`
       );
       const definition = commandList.find(
         (cmd) => cmd.name === interaction.commandName
