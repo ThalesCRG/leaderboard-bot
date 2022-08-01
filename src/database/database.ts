@@ -1,6 +1,6 @@
 import { connect, connection, model, Schema } from "mongoose";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
-import { IEntryEntity, ILeaderboardntity } from "./database-types";
+import { IEntryEntity, ILeaderboardEntity } from "./database-types";
 
 const entrySchema = new Schema({
   userId: { type: String, required: true },
@@ -18,7 +18,7 @@ const leaderboardSchema = new Schema({
   allowedList: [String],
 });
 
-const Leaderboard = model<ILeaderboardntity>("Leaderboard", leaderboardSchema);
+const Leaderboard = model<ILeaderboardEntity>("Leaderboard", leaderboardSchema);
 const Entry = model<IEntryEntity>("Entry", entrySchema);
 
 export async function initConnection(connectionString: string) {
@@ -113,7 +113,7 @@ export async function getAllLeaderboardsOfGuild(guildId: string) {
 
 export async function getLeaderboard(
   leaderboardId: string
-): Promise<ILeaderboardntity | undefined> {
+): Promise<ILeaderboardEntity | undefined> {
   try {
     const leaderboard = await Leaderboard.findById(leaderboardId);
 
@@ -126,7 +126,7 @@ export async function getLeaderboard(
 }
 
 export function getBestPerPerson(
-  leaderboard?: ILeaderboardntity,
+  leaderboard?: ILeaderboardEntity,
   entries?: Array<IEntryEntity>
 ): Array<IEntryEntity> {
   if (entries) {
@@ -159,7 +159,7 @@ function getBestPerPersonByEntries(
 }
 
 export function getAllowedPersons(
-  leaderboard: ILeaderboardntity
+  leaderboard: ILeaderboardEntity
 ): Array<string> {
   let result: Array<string> = [];
   if (leaderboard.protected) {

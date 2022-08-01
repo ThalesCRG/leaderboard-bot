@@ -4,7 +4,7 @@ export interface IEntryEntity extends Document {
   notes?: string;
 }
 
-export interface ILeaderboardntity extends Document {
+export interface ILeaderboardEntity extends Document {
   name: string;
   creatorId: string;
   guildId?: string;
