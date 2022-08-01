@@ -11,7 +11,6 @@ import {
   WebhookEditMessageOptions,
 } from "discord.js";
 import help from "./handlers/help";
-import { changeReply } from "./bot";
 
 export const useLegacyInteractionHandling = async function (
   interaction: CommandInteraction<CacheType>
