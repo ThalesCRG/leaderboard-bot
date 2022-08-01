@@ -11,7 +11,7 @@ export class CreateLeaderboard {
     this.protected = data.getBoolean("public") || false;
   }
   get isValid() {
-    return this.name.length > 0 && this.description.length > 0;
+    return this.name?.length > 0 && this.description?.length > 0;
   }
 }
 
