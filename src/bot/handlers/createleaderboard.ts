@@ -19,7 +19,10 @@ export default async function (data: DataHolder, user: string, guild: string) {
   const model = new CreateLeaderboard(data);
 
   if (!model.isValid) {
-    return console.error("so nicht mein junge!");
+    return console.error(
+      "create leaderboard model is not valid",
+      JSON.stringify(model)
+    );
   }
 
   const id = await database.createleaderboard(model, user, guild);
