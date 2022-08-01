@@ -1,16 +1,10 @@
-import cloneleaderboard from "./handlers/cloneleaderboard";
-import createentry from "./handlers/createentry";
-import deleteleaderboard from "./handlers/deleteleaderboard";
-import addallowence from "./handlers/addallowence";
-import allleaderboards from "./handlers/allleaderboards";
-import removeallowence from "./handlers/removeallowence";
 import {
   CacheType,
   CommandInteraction,
   MessagePayload,
   WebhookEditMessageOptions,
 } from "discord.js";
-import help from "./handlers/help";
+import legacyHandlers from "./handlers";
 
 export const useLegacyInteractionHandling = async function (
   interaction: CommandInteraction<CacheType>
@@ -18,27 +12,30 @@ export const useLegacyInteractionHandling = async function (
   let reply: string | MessagePayload | WebhookEditMessageOptions = "";
   switch (interaction.commandName) {
     case "createentry":
-      reply = await createentry(interaction);
+      reply = await legacyHandlers.createentry(interaction);
       break;
     case "deleteleaderboard":
-      reply = await deleteleaderboard(interaction);
+      reply = await legacyHandlers.deleteleaderboard(interaction);
       break;
     case "cloneleaderboard":
-      reply = await cloneleaderboard(interaction);
+      reply = await legacyHandlers.cloneleaderboard(interaction);
       break;
     case "addallowence":
-      reply = await addallowence(interaction);
+      reply = await legacyHandlers.addallowence(interaction);
       break;
     case "removeallowence":
-      reply = await removeallowence(interaction);
+      reply = await legacyHandlers.removeallowence(interaction);
       break;
     case "allleaderboards":
-      reply = await allleaderboards(interaction);
+      reply = await legacyHandlers.allleaderboards(interaction);
       break;
     case "help":
-      reply = await help(interaction);
+      reply = await legacyHandlers.help(interaction);
       break;
     default:
+      console.error(
+        `did not find a legacy handler to use for ${interaction.commandName}`
+      );
       break;
   }
   return reply;

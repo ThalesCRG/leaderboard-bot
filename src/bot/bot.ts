@@ -10,7 +10,7 @@ import { Routes } from "discord-api-types/rest/v10";
 
 import legacyCommands from "./legacy-commands.json";
 
-import handlers, { commandList, legacyHandlers } from "./handlers";
+import handlers, { commandList } from "./handlers";
 import { useLegacyInteractionHandling } from "./legacy-interaction-handler";
 import { HanlderResponse } from "../types";
 
