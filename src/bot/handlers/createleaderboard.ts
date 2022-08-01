@@ -6,8 +6,8 @@ export class CreateLeaderboard {
   description: string;
   protected: boolean;
   constructor(data: DataHolder) {
-    this.name = data.getString("leaderboardname") as string;
-    this.description = data.getString("description") as string;
+    this.name = data.getString("leaderboardname", true);
+    this.description = data.getString("description", true);
     this.protected = data.getBoolean("protected") || false;
   }
   get isValid() {
