@@ -28,10 +28,11 @@ export const createLeaderboardHandler = async (
   const model = new CreateLeaderboard(data);
 
   if (!model.isValid) {
-    return console.error(
+    console.error(
       "create leaderboard model is not valid",
       JSON.stringify(model)
     );
+    throw new Error("create leaderboard model is not valid");
   }
 
   const id = await database.saveLeaderboard(model, user, guild);

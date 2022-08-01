@@ -1,5 +1,7 @@
-import { connect, connection, model, Schema } from "mongoose";
+import { connect, connection, Model, model, Schema } from "mongoose";
+import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
+import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
 import { IEntryEntity, ILeaderboardEntity } from "./database-types";
 
 const entrySchema = new Schema({
@@ -71,39 +73,50 @@ export async function saveLeaderboard(
   return leaderboard.id as string;
 }
 
+const isPersonAllowed = (
+  leaderboard: ILeaderboardEntity,
+  userId: string
+): boolean => {
+  return leaderboard.allowedList?.indexOf(userId) !== -1;
+};
+
 export async function addEntry(
-  userId: string,
-  time: number,
-  leaderboardId: string,
-  executor: string,
-  notes?: string
-) {
-  const entry = new Entry();
-  entry.userId = userId;
-  entry.time = time;
-  if (notes) entry.notes = notes;
+  model: CreateEntry,
+  userId: string
+): Promise<[string, ILeaderboardEntity]> {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
 
-  console.log(`Adding entry: ${JSON.stringify(entry)}`);
+  if (leaderboard === null) {
+    throw new Error(
+      `Cannot add an entry to unknown leaderboard ${model.leaderboardId}`
+    );
+  }
 
+  if (leaderboard?.protected === true) {
+    throw new Error(`Leaderboard ${leaderboard.id} is read-only`);
+  }
+
+  if (isPersonAllowed(leaderboard, userId)) {
+    throw new Error(
+      `Permission denied: ${userId} is not allowed to write to ${model.leaderboardId}`
+    );
+  }
+
+  const entry = new Entry({
+    userId: model.driver,
+    time: ConvertTimeStringToMilliseconds(model.time),
+    notes: model.notes,
+  });
+
+  leaderboard?.entries.push(entry);
   try {
-    const leaderboard = await Leaderboard.findById(leaderboardId);
-    if (!leaderboard) throw new Error("leaderboard not found");
-    const allowedPersons = getAllowedPersons(leaderboard);
-    console.log(`Allowed: ${allowedPersons} user: ${executor}`);
-
-    if (
-      leaderboard.protected &&
-      !allowedPersons.find((userId) => userId === executor)
-    )
-      throw new Error("executor not allowed");
-
-    leaderboard.entries.push(entry);
-
-    await leaderboard.save();
-    return leaderboard;
+    const entry = await leaderboard?.save();
+    console.log(`persisted new time entry ${entry.id} for ${leaderboard.id}`);
   } catch (error) {
     console.log(error);
+    throw new Error(`could not save time entry for ${userId}`);
   }
+  return [entry.id, leaderboard];
 }
 
 export async function getAllLeaderboardsOfGuild(guildId: string) {

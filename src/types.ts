@@ -31,10 +31,24 @@ export type DataHolder = Omit<
   "getMessage" | "getFocused"
 >;
 
-export type HanlderResponse =
+export type HandlerResponseMessage =
   | string
   | MessagePayload
   | WebhookEditMessageOptions;
+
+export type HandlerResponse = {
+  message: HandlerResponseMessage;
+  postActions?: PostAction[];
+};
+
+export enum PostActionType {
+  printLeaderboardFiltered,
+}
+
+export type PostAction = {
+  action: PostActionType;
+  data: any;
+};
 
 export enum DiscordDataTypes {
   "STRING" = 3,

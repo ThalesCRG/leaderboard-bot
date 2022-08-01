@@ -5,6 +5,7 @@ export interface IEntryEntity extends Document {
 }
 
 export interface ILeaderboardEntity extends Document {
+  id: string | undefined;
   name: string;
   creatorId: string;
   guildId?: string;

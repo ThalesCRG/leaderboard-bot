@@ -4,6 +4,7 @@ import {
   CommandInteraction,
   Intents,
   Interaction,
+  TextBasedChannel,
 } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
@@ -12,7 +13,13 @@ import legacyCommands from "./legacy-commands.json";
 
 import handlers, { commandList } from "./handlers";
 import { useLegacyInteractionHandling } from "./legacy-interaction-handler";
-import { HanlderResponse } from "../types";
+import {
+  HandlerResponse,
+  HandlerResponseMessage,
+  PostAction,
+  PostActionType,
+} from "../types";
+import { printFilteredLeaderboard } from "../utils/messageUtils";
 
 const client = new Client({
   intents: [
@@ -34,8 +41,6 @@ export async function initConnection(token: string, appId: string) {
   console.log("Started refreshing application (/) commands.");
 
   const commands = commandList.concat(legacyCommands);
-  console.log(commands);
-
   const response = (await rest.put(Routes.applicationCommands(appId), {
     body: commands,
   })) as Array<{ id: string; name: string }>;
@@ -57,13 +62,13 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
 
     await interaction.reply({ content: "wait a second", ephemeral: true });
 
-    let response: HanlderResponse = "no response retrieved";
+    let response: HandlerResponse = { message: "no response retrieved" };
 
     if (handlers[interaction.commandName] === undefined) {
       console.log(
         `using legacy handler for command ${interaction.commandName}`
       );
-      response = await useLegacyInteractionHandling(interaction);
+      response.message = await useLegacyInteractionHandling(interaction);
     } else {
       console.log(
         `trying to use modern handler for command ${interaction.commandName}`
@@ -84,25 +89,37 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
         );
       }
 
-      response = await handlers[interaction.commandName](
-        interaction.options,
-        interaction.user?.id,
-        interaction.guildId
-      );
+      try {
+        response = await handlers[interaction.commandName](
+          interaction.options,
+          interaction.user?.id,
+          interaction.guildId
+        );
+      } catch (error) {
+        console.log("an error occurred. sending error response");
+        changeReply(interaction, `${error}`);
+        return;
+      }
     }
 
     console.log(
       `handler for ${interaction.commandName} returned with response`,
-      response
+      response.message
     );
 
-    changeReply(interaction, response);
+    if (response.postActions?.length) {
+      response.postActions.forEach((action) => {
+        handlePostAction(action, interaction);
+      });
+    }
+
+    changeReply(interaction, response.message);
   }
 };
 
 export async function changeReply(
   interaction: CommandInteraction,
-  content: HanlderResponse
+  content: HandlerResponseMessage
 ): Promise<void> {
   if (!content) return;
   try {
@@ -111,3 +128,17 @@ export async function changeReply(
     console.log("Could not change reply - error: ", error);
   }
 }
+
+const handlePostAction = (
+  action: PostAction,
+  interaction: Interaction<CacheType>
+) => {
+  if (action.action === PostActionType.printLeaderboardFiltered) {
+    printFilteredLeaderboard(
+      action.data,
+      interaction.channel as TextBasedChannel
+    );
+  } else {
+    console.error(`could not execute post action ${action.action}`);
+  }
+};

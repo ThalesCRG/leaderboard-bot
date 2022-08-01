@@ -70,36 +70,6 @@
     ]
   },
   {
-    "name": "createentry",
-    "description": "Add an entry to the leaderboard",
-    "options": [
-      {
-        "name": "leaderboardid",
-        "description": "Id of the Leaderboard to which the entry shall be added",
-        "type": 3,
-        "required": true
-      },
-      {
-        "name": "time",
-        "description": "Time in format MM:SS.mmm",
-        "type": 3,
-        "required": true
-      },
-      {
-        "name": "driver",
-        "description": "Driver who drove this time defaults to yourself",
-        "type": 6,
-        "required": false
-      },
-      {
-        "name": "notes",
-        "description": "Any Notes to add? e.g. Car, or conditons",
-        "type": 3,
-        "required": false
-      }
-    ]
-  },
-  {
     "name": "help",
     "description": "Prints a help message"
   }
