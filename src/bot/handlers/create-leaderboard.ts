@@ -6,9 +6,13 @@ export class CreateLeaderboard {
   description: string;
   protected: boolean;
   constructor(data: DataHolder) {
-    this.name = data.getString(LeaderboardOption.name, true);
-    this.description = data.getString(LeaderboardOption.description, true);
-    this.protected = data.getBoolean(LeaderboardOption.protected) || false;
+    this.name = data.getString(CreateLeaderboardOption.name, true);
+    this.description = data.getString(
+      CreateLeaderboardOption.description,
+      true
+    );
+    this.protected =
+      data.getBoolean(CreateLeaderboardOption.protected) || false;
   }
   get isValid() {
     return this.name?.length > 0 && this.description?.length > 0;
@@ -34,7 +38,7 @@ export const createLeaderboardHandler = async (
   return `Leaderboard with ${id} created.`;
 };
 
-export enum LeaderboardOption {
+enum CreateLeaderboardOption {
   name = "leaderboardname",
   description = "description",
   protected = "protected",
@@ -45,19 +49,19 @@ export const createLeaderboardCommand: Command = {
   description: "Creates a Leaderboard and posts it in your Channel",
   options: [
     {
-      name: LeaderboardOption.name,
+      name: CreateLeaderboardOption.name,
       description: "The name of the leaderboard",
       type: DiscordDataTypes.STRING,
       required: true,
     },
     {
-      name: LeaderboardOption.description,
+      name: CreateLeaderboardOption.description,
       description: "Description of the leaderboard",
       type: DiscordDataTypes.STRING,
       required: true,
     },
     {
-      name: LeaderboardOption.protected,
+      name: CreateLeaderboardOption.protected,
       description: "Can everybody submit a time?",
       type: DiscordDataTypes.BOOLEAN,
       required: false,
