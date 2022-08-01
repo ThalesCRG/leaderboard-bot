@@ -12,8 +12,11 @@ import help from "./help";
 
 export const commandList: Array<Command> = [createLeaderboardOption];
 
-export default {
+const handlers: { [key: string]: any } = {
   createleaderboard,
+};
+
+export const legacyHandlers: { [key: string]: any } = {
   cloneleaderboard,
   deleteleaderboard,
   allleaderboards,
@@ -24,4 +27,6 @@ export default {
   removeallowence,
 
   help,
-} as { [key: string]: any };
+};
+
+export default handlers;

@@ -10,7 +10,10 @@ import {
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
 
-import handlers, { commandList } from "./handlers";
+import legacyCommands from "./legacy-commands.json";
+
+import handlers, { commandList, legacyHandlers } from "./handlers";
+import { useLegacyInteractionHandling } from "./legacy-interaction-handler";
 
 const client = new Client({
   intents: [
@@ -31,8 +34,11 @@ export async function initConnection(token: string, appId: string) {
 
   console.log("Started refreshing application (/) commands.");
 
+  const commands = commandList.concat(legacyCommands);
+  console.log(commands);
+
   const response = (await rest.put(Routes.applicationCommands(appId), {
-    body: commandList,
+    body: commands,
   })) as Array<{ id: string; name: string }>;
 
   client.on("interactionCreate", handleInteractions);
@@ -50,32 +56,42 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
       throw new Error("what shall i do if mandatory data is not present?");
     }
 
-    console.log(`trying to use handler for command ${interaction.commandName}`);
-
-    const definition = commandList.find(
-      (cmd) => cmd.name === interaction.commandName
-    );
-
-    if (!definition) {
-      return console.error(
-        `could not find command definition for ${interaction.commandName}`
-      );
-    }
-
-    if (!handlers[interaction.commandName]) {
-      return console.error(
-        `missing handler implementation for ${interaction.commandName}.`
-      );
-    }
-
     await interaction.reply({ content: "wait a second", ephemeral: true });
 
-    const response: string | MessagePayload | WebhookEditMessageOptions =
-      await handlers[interaction.commandName](
+    let response: string | MessagePayload | WebhookEditMessageOptions =
+      "no response retrieved";
+
+    if (handlers[interaction.commandName] === undefined) {
+      console.log(
+        `using legacy handler for command ${interaction.commandName}`
+      );
+      response = await useLegacyInteractionHandling(interaction);
+    } else {
+      console.log(
+        `trying to use modern  handler for command ${interaction.commandName}`
+      );
+      const definition = commandList.find(
+        (cmd) => cmd.name === interaction.commandName
+      );
+
+      if (!definition) {
+        return console.error(
+          `could not find command definition for ${interaction.commandName}`
+        );
+      }
+
+      if (!handlers[interaction.commandName]) {
+        return console.error(
+          `missing handler implementation for ${interaction.commandName}.`
+        );
+      }
+
+      response = await handlers[interaction.commandName](
         interaction.options,
         interaction.user?.id,
         interaction.guildId
       );
+    }
 
     console.log(
       `handler for ${interaction.commandName} returned with response`,
@@ -86,7 +102,7 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
   }
 };
 
-async function changeReply(
+export async function changeReply(
   interaction: CommandInteraction,
   content: string | MessagePayload | WebhookEditMessageOptions
 ): Promise<void> {

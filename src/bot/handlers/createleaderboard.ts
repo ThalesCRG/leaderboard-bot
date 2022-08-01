@@ -6,7 +6,7 @@ export class CreateLeaderboard {
   description: string;
   protected: boolean;
   constructor(data: DataHolder) {
-    this.name = data.getString("ledaerboardname") as string;
+    this.name = data.getString("leaderboardname") as string;
     this.description = data.getString("description") as string;
     this.protected = data.getBoolean("public") || false;
   }
