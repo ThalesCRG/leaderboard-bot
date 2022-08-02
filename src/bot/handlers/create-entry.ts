@@ -55,7 +55,7 @@ export const createEntryHandler = async (
 };
 
 enum CreateEntryOption {
-  leaderboardId = "leaderboarid",
+  leaderboardId = "leaderboardid",
   time = "time",
   driver = "driver",
   notes = "notes",
