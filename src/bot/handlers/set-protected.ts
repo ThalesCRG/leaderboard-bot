@@ -1,4 +1,9 @@
-import { Command, DataHolder, HandlerResponse } from "../../types";
+import {
+  Command,
+  DataHolder,
+  DiscordDataTypes,
+  HandlerResponse,
+} from "../../types";
 import { setProtected } from "../../database/database";
 import { CommandNames } from "../command-names";
 
@@ -47,14 +52,14 @@ export const setProtectedCommand: Command = {
       name: SetProtectedOption.leaderboardId,
       description:
         "The ID of the leaderboard that protection should be changed",
-      type: 3,
+      type: DiscordDataTypes.STRING,
       required: true,
     },
     {
       name: SetProtectedOption.protectedFlag,
       description:
         "Should only you be allowed to create entries on this leaderboard?",
-      type: 5,
+      type: DiscordDataTypes.BOOLEAN,
       required: true,
     },
   ],
