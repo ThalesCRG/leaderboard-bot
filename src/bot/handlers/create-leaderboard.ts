@@ -1,5 +1,10 @@
 import * as database from "../../database/database";
-import { Command, DataHolder, DiscordDataTypes } from "../../types";
+import {
+  Command,
+  DataHolder,
+  DiscordDataTypes,
+  HandlerResponse,
+} from "../../types";
 import { CommandNames } from "../command-names";
 
 export class CreateLeaderboard {
@@ -24,7 +29,7 @@ export const createLeaderboardHandler = async (
   data: DataHolder,
   user: string,
   guild: string
-) => {
+): Promise<HandlerResponse> => {
   const model = new CreateLeaderboard(data);
 
   if (!model.isValid) {
@@ -37,7 +42,7 @@ export const createLeaderboardHandler = async (
 
   const id = await database.saveLeaderboard(model, user, guild);
 
-  return `Leaderboard with ${id} created.`;
+  return { message: `Leaderboard with ${id} created.` };
 };
 
 enum CreateLeaderboardOption {

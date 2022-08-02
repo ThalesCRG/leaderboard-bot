@@ -1,5 +1,10 @@
 import { addEntry } from "../../database/database";
-import { Command, DataHolder, PostActionType } from "../../types";
+import {
+  Command,
+  DataHolder,
+  HandlerResponse,
+  PostActionType,
+} from "../../types";
 import { TIME_REGEX } from "../../utils/time-utils";
 import { CommandNames } from "../command-names";
 
@@ -11,19 +16,22 @@ export class CreateEntry {
   constructor(data: DataHolder, user: string) {
     this.leaderboardId = data.getString(CreateEntryOption.leaderboardId, true);
     this.time = data.getString(CreateEntryOption.time, true);
-    this.driver = data.getString(CreateEntryOption.driver) ?? user;
+    this.driver = data.getUser(CreateEntryOption.driver)?.id ?? user;
     this.notes = data.getString(CreateEntryOption.notes);
   }
   get isValid() {
     return (
-      this.leaderboardId?.length === 24 &&
+      this.leaderboardId.match("^[0-9a-fA-F]{24}$") &&
       TIME_REGEX.test(this.time) &&
       this.driver?.length
     );
   }
 }
 
-export const createEntryHandler = async (data: DataHolder, user: string) => {
+export const createEntryHandler = async (
+  data: DataHolder,
+  user: string
+): Promise<HandlerResponse> => {
   const model = new CreateEntry(data, user);
 
   if (!model.isValid) {
