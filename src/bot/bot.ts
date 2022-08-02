@@ -20,12 +20,15 @@ import removeallowence from "./handlers/removeallowence";
 
 import { commands } from "./commands";
 import help from "./handlers/help";
+import setprotected from "./handlers/set-protected";
+import { myleaderboards } from "./handlers/myleaderboards";
 
 const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
     Intents.FLAGS.GUILD_MEMBERS,
+    Intents.FLAGS.DIRECT_MESSAGES,
   ],
 });
 
@@ -81,6 +84,11 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
       case "help":
         reply = await help(interaction);
         break;
+      case "setprotected":
+        reply = await setprotected(interaction);
+        break;
+      case "myleaderboards":
+        reply = await myleaderboards(interaction);
       default:
         break;
     }

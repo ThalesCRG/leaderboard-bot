@@ -132,4 +132,28 @@ export const commands: Array<Command> = [
     name: "help",
     description: "Prints a help message",
   },
+  {
+    name: "setprotected",
+    description: "Changes, wether or not your leaderboard is protected",
+    options: [
+      {
+        name: "leaderboardid",
+        description:
+          "The ID of the leaderboard that protection should be changed",
+        type: 3,
+        required: true,
+      },
+      {
+        name: "protected",
+        description:
+          "Should only you be allowed to create entries on this leaderboard?",
+        type: 5,
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "myleaderboards",
+    description: "DMs you all leaderboards where you are a entry.",
+  },
 ];

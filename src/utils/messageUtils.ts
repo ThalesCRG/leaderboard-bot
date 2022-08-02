@@ -69,7 +69,7 @@ function parseOneEntry(entry: IEntry, position: number): string {
   if (entry) {
     result = `${position}. ${mentionUser(entry.userId)} ${parseTime(
       entry.time
-    )} ${entry.notes ? "  ||  " + entry.notes : ""}`;
+    )} ${entry.notes ? "  \\|\\|  " + entry.notes : ""}`;
   }
 
   return result;
