@@ -37,6 +37,7 @@ export const useLegacyInteractionHandling = async function (
       break;
     case "myleaderboards":
       reply = await legacyHandlers.myleaderboards(interaction);
+      break;
     default:
       console.error(
         `did not find a legacy handler to use for ${interaction.commandName}`
