@@ -235,3 +235,27 @@ export async function deleteLeaderboard(
     console.log(error);
   }
 }
+
+export async function setProtected(
+  leaderboardId: string,
+  executor: string,
+  protectedFlag: boolean
+) {
+  if (!leaderboardId || !executor)
+    throw new Error("LeaderboardId or UserId not provided!");
+
+  const leaderboard = await Leaderboard.findById(leaderboardId);
+  if (!leaderboard) throw new Error("Leaderboard not found!");
+
+  if (executor !== leaderboard.creatorId) throw new Error("Not allowed.");
+
+  leaderboard.protected = protectedFlag;
+  leaderboard.save();
+}
+
+export async function getUserLeaderboards(
+  userId: string
+): Promise<Array<ILeaderboardEntity>> {
+  const leaderboards = await Leaderboard.find({ "entries.userId": userId });
+  return leaderboards;
+}

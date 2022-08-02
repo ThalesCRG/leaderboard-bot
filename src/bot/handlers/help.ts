@@ -42,6 +42,15 @@ const messegeEmbed: MessageEmbedOptions = {
       value: "Deletes the leaderboard with the ID you provided",
     },
     {
+      name: "/setprotected",
+      value:
+        "You can change the protection status of your leaderboard. If a Leaderboard is protected only allowed person can create entries.",
+    },
+    {
+      name: "/myleaderboards",
+      value: "Send's you a DM with all leaderboards where you are a entry.",
+    },
+    {
       name: "/help",
       value: "Replies with this message",
     },
