@@ -1,6 +1,7 @@
 import { connect, connection, Model, model, Schema } from "mongoose";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
+import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
 import { IEntryEntity, ILeaderboardEntity } from "./database-types";
 
@@ -236,21 +237,18 @@ export async function deleteLeaderboard(
   }
 }
 
-export async function setProtected(
-  leaderboardId: string,
-  executor: string,
-  protectedFlag: boolean
-) {
-  if (!leaderboardId || !executor)
-    throw new Error("LeaderboardId or UserId not provided!");
-
-  const leaderboard = await Leaderboard.findById(leaderboardId);
+export async function setProtected(model: SetProtected, executor: string) {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
 
   if (executor !== leaderboard.creatorId) throw new Error("Not allowed.");
 
-  leaderboard.protected = protectedFlag;
-  leaderboard.save();
+  leaderboard.protected = model.protectedFlag;
+  try {
+    leaderboard.save();
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export async function getUserLeaderboards(

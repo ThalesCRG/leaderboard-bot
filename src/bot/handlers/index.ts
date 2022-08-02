@@ -11,11 +11,12 @@ import addallowence from "./addallowence";
 import removeallowence from "./removeallowence";
 import help from "./help";
 import { myleaderboards } from "./myleaderboards";
-import setprotected from "./set-protected";
+import { setProtectedCommand, setProtectedHandler } from "./set-protected";
 
 export const commandList: Array<Command> = [
   createLeaderboardCommand,
   createEntryCommand,
+  setProtectedCommand,
 ];
 
 /**
@@ -24,6 +25,7 @@ export const commandList: Array<Command> = [
 const handlers: { [key: string]: any } = {
   [createLeaderboardCommand.name]: createLeaderboardHandler,
   [createEntryCommand.name]: createEntryHandler,
+  [setProtectedCommand.name]: setProtectedHandler,
 };
 
 export const legacyHandlers: { [key: string]: any } = {
@@ -33,7 +35,6 @@ export const legacyHandlers: { [key: string]: any } = {
   addallowence,
   removeallowence,
   myleaderboards,
-  setprotected,
 
   help,
 };
