@@ -4,7 +4,7 @@ import {
   MessagePayload,
   WebhookEditMessageOptions,
 } from "discord.js";
-import legacyHandlers from "./handlers";
+import { legacyHandlers } from "./handlers";
 
 export const useLegacyInteractionHandling = async function (
   interaction: CommandInteraction<CacheType>
