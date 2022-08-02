@@ -77,7 +77,10 @@ const isPersonAllowed = (
   leaderboard: ILeaderboardEntity,
   userId: string
 ): boolean => {
-  return leaderboard.allowedList?.indexOf(userId) !== -1;
+  return (
+    leaderboard.creatorId === userId ||
+    leaderboard.allowedList?.indexOf(userId) !== -1
+  );
 };
 
 export async function addEntry(
@@ -93,13 +96,11 @@ export async function addEntry(
   }
 
   if (leaderboard?.protected === true) {
-    throw new Error(`Leaderboard ${leaderboard.id} is read-only`);
-  }
-
-  if (isPersonAllowed(leaderboard, userId)) {
-    throw new Error(
-      `Permission denied: ${userId} is not allowed to write to ${model.leaderboardId}`
-    );
+    if (!isPersonAllowed(leaderboard, userId)) {
+      throw new Error(
+        `Permission denied: ${userId} is not allowed to write to ${model.leaderboardId}`
+      );
+    }
   }
 
   const entry = new Entry({
