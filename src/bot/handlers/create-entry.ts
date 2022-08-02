@@ -49,7 +49,7 @@ export const createEntryHandler = async (
   ];
 
   return {
-    message: `Added entry ${id} for <${model.driver}> to leaderboard: ${leaderboard.name}`,
+    message: `Added entry ${id} for <@${model.driver}> to leaderboard: ${leaderboard.name}`,
     postActions,
   };
 };
