@@ -1,4 +1,4 @@
-export const TIME_REGEX = /^[0-5][0-9][:][0-5][0-9][.]\d\d\d$/;
+export const TIME_REGEX = /^[0-5]?[0-9][:][0-5][0-9][.]\d\d\d$/;
 
 export function ConvertTimeStringToMilliseconds(time: string): number {
   let result = 0;
