@@ -1,15 +1,16 @@
-export interface IEntry extends Document {
+export interface IEntryEntity extends Document {
   userId: string;
   time: number;
   notes?: string;
 }
 
-export interface ILeaderboard extends Document {
+export interface ILeaderboardEntity extends Document {
+  id: string | undefined;
   name: string;
   creatorId: string;
   guildId?: string;
   description?: string;
   protected?: boolean;
   allowedList?: string[];
-  entries: IEntry[];
+  entries: IEntryEntity[];
 }

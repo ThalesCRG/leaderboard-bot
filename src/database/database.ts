@@ -1,5 +1,8 @@
-import { connect, connection, model, Schema } from "mongoose";
-import { IEntry, ILeaderboard } from "./database-types";
+import { connect, connection, Model, model, Schema } from "mongoose";
+import { CreateEntry } from "../bot/handlers/create-entry";
+import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
+import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
+import { IEntryEntity, ILeaderboardEntity } from "./database-types";
 
 const entrySchema = new Schema({
   userId: { type: String, required: true },
@@ -17,8 +20,8 @@ const leaderboardSchema = new Schema({
   allowedList: [String],
 });
 
-const Leaderboard = model<ILeaderboard>("Leaderboard", leaderboardSchema);
-const Entry = model<IEntry>("Entry", entrySchema);
+const Leaderboard = model<ILeaderboardEntity>("Leaderboard", leaderboardSchema);
+const Entry = model<IEntryEntity>("Entry", entrySchema);
 
 export async function initConnection(connectionString: string) {
   if (!connectionString) {
@@ -46,62 +49,75 @@ export async function initConnection(connectionString: string) {
   });
 }
 
-export async function createleaderboard(
-  name: string,
-  description: string,
-  executorId: string,
-  guildId: string,
-  protectedFlag: boolean = false
-): Promise<ILeaderboard | undefined> {
-  let leaderboard = new Leaderboard();
-  leaderboard.name = name;
-  leaderboard.description = description;
-  leaderboard.protected = protectedFlag;
-  leaderboard.creatorId = executorId;
-  leaderboard.guildId = guildId;
+export async function saveLeaderboard(
+  model: CreateLeaderboard,
+  creatorId: string,
+  guildId: string
+): Promise<string> {
+  const leaderboard = new Leaderboard({
+    name: model.name,
+    description: model.description,
+    protected: model.protected,
+    creatorId,
+    guildId,
+  });
 
   try {
     const result = await leaderboard.save();
     console.log(`Created new Leaderboard: ${JSON.stringify(result)}`);
-    return result;
   } catch (error) {
     console.log(error);
+    throw new Error(`could not persist leaderboard with name ${model.name}`);
   }
+
+  return leaderboard.id as string;
 }
 
+const isPersonAllowed = (
+  leaderboard: ILeaderboardEntity,
+  userId: string
+): boolean => {
+  return (
+    leaderboard.creatorId === userId ||
+    leaderboard.allowedList?.indexOf(userId) !== -1
+  );
+};
+
 export async function addEntry(
-  userId: string,
-  time: number,
-  leaderboardId: string,
-  executor: string,
-  notes?: string
-) {
-  const entry = new Entry();
-  entry.userId = userId;
-  entry.time = time;
-  if (notes) entry.notes = notes;
+  model: CreateEntry,
+  userId: string
+): Promise<[string, ILeaderboardEntity]> {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
 
-  console.log(`Adding entry: ${JSON.stringify(entry)}`);
+  if (leaderboard === null) {
+    throw new Error(
+      `Cannot add an entry to unknown leaderboard ${model.leaderboardId}`
+    );
+  }
 
+  if (leaderboard?.protected === true) {
+    if (!isPersonAllowed(leaderboard, userId)) {
+      throw new Error(
+        `Permission denied: ${userId} is not allowed to write to ${model.leaderboardId}`
+      );
+    }
+  }
+
+  const entry = new Entry({
+    userId: model.driver,
+    time: ConvertTimeStringToMilliseconds(model.time),
+    notes: model.notes,
+  });
+
+  leaderboard?.entries.push(entry);
   try {
-    const leaderboard = await Leaderboard.findById(leaderboardId);
-    if (!leaderboard) throw new Error("leaderboard not found");
-    const allowedPersons = getAllowedPersons(leaderboard);
-    console.log(`Allowed: ${allowedPersons} user: ${executor}`);
-
-    if (
-      leaderboard.protected &&
-      !allowedPersons.find((userId) => userId === executor)
-    )
-      throw new Error("executor not allowed");
-
-    leaderboard.entries.push(entry);
-
-    await leaderboard.save();
-    return leaderboard;
+    const entry = await leaderboard?.save();
+    console.log(`persisted new time entry ${entry.id} for ${leaderboard.id}`);
   } catch (error) {
     console.log(error);
+    throw new Error(`could not save time entry for ${userId}`);
   }
+  return [entry.id, leaderboard];
 }
 
 export async function getAllLeaderboardsOfGuild(guildId: string) {
@@ -111,7 +127,7 @@ export async function getAllLeaderboardsOfGuild(guildId: string) {
 
 export async function getLeaderboard(
   leaderboardId: string
-): Promise<ILeaderboard | undefined> {
+): Promise<ILeaderboardEntity | undefined> {
   try {
     const leaderboard = await Leaderboard.findById(leaderboardId);
 
@@ -124,9 +140,9 @@ export async function getLeaderboard(
 }
 
 export function getBestPerPerson(
-  leaderboard?: ILeaderboard,
-  entries?: Array<IEntry>
-): Array<IEntry> {
+  leaderboard?: ILeaderboardEntity,
+  entries?: Array<IEntryEntity>
+): Array<IEntryEntity> {
   if (entries) {
     return getBestPerPersonByEntries(entries);
   } else {
@@ -135,16 +151,18 @@ export function getBestPerPerson(
   return [];
 }
 
-function getBestPerPersonByEntries(entries: IEntry[]): Array<IEntry> {
-  let result: IEntry[] = [];
+function getBestPerPersonByEntries(
+  entries: IEntryEntity[]
+): Array<IEntryEntity> {
+  let result: IEntryEntity[] = [];
 
-  entries.forEach((element: IEntry) => {
+  entries.forEach((element: IEntryEntity) => {
     if (!result.find((entry) => entry.userId === element.userId)) {
       const userEntries = entries.filter(
-        (entry: IEntry) => entry.userId === element.userId
+        (entry: IEntryEntity) => entry.userId === element.userId
       );
       result.push(
-        userEntries?.reduce((acc: IEntry, entry: IEntry) =>
+        userEntries?.reduce((acc: IEntryEntity, entry: IEntryEntity) =>
           acc.time > entry.time ? entry : acc
         )
       );
@@ -154,7 +172,9 @@ function getBestPerPersonByEntries(entries: IEntry[]): Array<IEntry> {
   return result;
 }
 
-export function getAllowedPersons(leaderboard: ILeaderboard): Array<string> {
+export function getAllowedPersons(
+  leaderboard: ILeaderboardEntity
+): Array<string> {
   let result: Array<string> = [];
   if (leaderboard.protected) {
     result.push(leaderboard.creatorId);
@@ -235,7 +255,7 @@ export async function setProtected(
 
 export async function getUserLeaderboards(
   userId: string
-): Promise<Array<ILeaderboard>> {
+): Promise<Array<ILeaderboardEntity>> {
   const leaderboards = await Leaderboard.find({ "entries.userId": userId });
   return leaderboards;
 }
