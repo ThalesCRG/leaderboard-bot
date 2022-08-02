@@ -10,6 +10,8 @@ import deleteleaderboard from "./deleteleaderboard";
 import addallowence from "./addallowence";
 import removeallowence from "./removeallowence";
 import help from "./help";
+import { myleaderboards } from "./myleaderboards";
+import setprotected from "./set-protected";
 
 export const commandList: Array<Command> = [
   createLeaderboardCommand,
@@ -30,6 +32,8 @@ export const legacyHandlers: { [key: string]: any } = {
   allleaderboards,
   addallowence,
   removeallowence,
+  myleaderboards,
+  setprotected,
 
   help,
 };
