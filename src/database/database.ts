@@ -1,6 +1,10 @@
-import { connect, connection, Model, model, Schema } from "mongoose";
+import { connect, connection, model, Schema } from "mongoose";
+import { AddAllowence } from "../bot/handlers/add-allowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
+import { DeleteLeaderboard } from "../bot/handlers/delete-leaderboard";
+import { RemoveAllowence } from "../bot/handlers/remove-allowence";
+import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
 import { IEntryEntity, ILeaderboardEntity } from "./database-types";
 
@@ -121,6 +125,7 @@ export async function addEntry(
 }
 
 export async function getAllLeaderboardsOfGuild(guildId: string) {
+  if (!guildId) return [];
   const leaderboards = await Leaderboard.find({ guildId: guildId });
   return leaderboards;
 }
@@ -186,71 +191,90 @@ export function getAllowedPersons(
 }
 
 export async function addAllowence(
-  leaderboardId: string,
-  userId: string,
-  executor: string
-) {
-  const leaderboard = await Leaderboard.findById(leaderboardId);
+  model: AddAllowence,
+  executorId: string
+): Promise<{ userId: string; leaderboardId: string } | undefined> {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
-  if (leaderboard.creatorId !== executor) throw new Error("Not allowed.");
+  if (leaderboard.creatorId !== executorId)
+    throw new Error(
+      "Only the creator of the leaderboard can add or remove allowences."
+    );
 
-  if (!leaderboard.allowedList) leaderboard.allowedList = [userId];
+  if (!leaderboard.allowedList) leaderboard.allowedList = [model.userId];
   else {
-    leaderboard.allowedList.push(userId);
+    if (!leaderboard.allowedList.find((entry) => entry === model.userId)) {
+      leaderboard.allowedList.push(model.userId);
+    } else throw new Error("This User is already allowed to create Entries.");
   }
-  await leaderboard.save();
+  try {
+    await leaderboard.save();
+    return { userId: model.userId, leaderboardId: model.leaderboardId };
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export async function removeAllowence(
-  leaderboardId: string,
-  userId: string,
-  executor: string
-) {
-  const leaderboard = await Leaderboard.findById(leaderboardId);
+  model: RemoveAllowence,
+  executorId: string
+): Promise<RemoveAllowence> {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
-  if (leaderboard.creatorId !== executor) throw new Error("Not allowed.");
 
-  if (!leaderboard.allowedList) return;
-  if (leaderboard.allowedList.find((entry: any) => entry === userId))
-    leaderboard.allowedList = leaderboard.allowedList.filter(
-      (entry: any) => entry !== userId
+  if (leaderboard.creatorId !== executorId)
+    throw new Error(
+      "Only the creator of the leaderboard can add or remove allowences."
     );
 
+  if (!leaderboard.allowedList) return model;
+
+  if (leaderboard.allowedList.find((entry: any) => entry === model.userId)) {
+    leaderboard.allowedList = leaderboard.allowedList.filter(
+      (entry: any) => entry !== model.userId
+    );
+  } else
+    throw new Error(
+      `<@${
+        model.userId
+      }> was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
+    );
   await leaderboard.save();
+  return model;
 }
 
 export async function deleteLeaderboard(
-  leaderboardId: string,
+  model: DeleteLeaderboard,
   executor: string
 ) {
-  const leaderboard = await Leaderboard.findById(leaderboardId);
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
 
   if (leaderboard.creatorId !== executor)
-    throw new Error("Not authorized to deleteLeaderboard");
+    throw new Error(
+      "Not authorized to delete Leaderboard. Only the creator of the leaderboard is allowed to delete."
+    );
 
   try {
     await leaderboard.remove();
+    return { leaderboardId: leaderboard.id };
   } catch (error) {
     console.log(error);
   }
 }
 
-export async function setProtected(
-  leaderboardId: string,
-  executor: string,
-  protectedFlag: boolean
-) {
-  if (!leaderboardId || !executor)
-    throw new Error("LeaderboardId or UserId not provided!");
-
-  const leaderboard = await Leaderboard.findById(leaderboardId);
+export async function setProtected(model: SetProtected, executor: string) {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
 
   if (executor !== leaderboard.creatorId) throw new Error("Not allowed.");
 
-  leaderboard.protected = protectedFlag;
-  leaderboard.save();
+  leaderboard.protected = model.protectedFlag;
+  try {
+    leaderboard.save();
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export async function getUserLeaderboards(

@@ -2,8 +2,10 @@ import {
   CacheType,
   CommandInteractionOptionResolver,
   MessagePayload,
+  TextBasedChannel,
   WebhookEditMessageOptions,
 } from "discord.js";
+import { ILeaderboardEntity } from "./database/database-types";
 
 export interface Command {
   name: string;
@@ -42,16 +44,30 @@ export type HandlerResponse = {
 };
 
 export enum PostActionType {
+  printLeaderboard,
   printLeaderboardFiltered,
+  printMultipleLeaderboards,
 }
 
 export type PostAction = {
   action: PostActionType;
-  data: any;
+  data: {
+    leaderboards?: ILeaderboardEntity[];
+    leaderboard?: ILeaderboardEntity;
+    channel?: TextBasedChannel;
+  };
 };
 
 export enum DiscordDataTypes {
+  "SUB_COMMAND" = 1,
+  "SUB_COMMAND_GROUP" = 2,
   "STRING" = 3,
-  "NUMBER" = 4,
+  "INTEGER" = 4,
   "BOOLEAN" = 5,
+  "USER" = 6,
+  "CHANNEL" = 7,
+  "ROLE" = 8,
+  "MENTIONABLE" = 9,
+  "NUMBER" = 10,
+  "ATTACHMENT" = 11,
 }

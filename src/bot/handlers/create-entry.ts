@@ -5,6 +5,7 @@ import {
   HandlerResponse,
   PostActionType,
 } from "../../types";
+import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { TIME_REGEX } from "../../utils/time-utils";
 import { CommandNames } from "../command-names";
 
@@ -21,7 +22,7 @@ export class CreateEntry {
   }
   get isValid() {
     return (
-      this.leaderboardId.match("^[0-9a-fA-F]{24}$") &&
+      this.leaderboardId.match(LEADERBOARDID_REGEX) &&
       TIME_REGEX.test(this.time) &&
       this.driver?.length
     );
@@ -44,7 +45,7 @@ export const createEntryHandler = async (
   const postActions = [
     {
       action: PostActionType.printLeaderboardFiltered,
-      data: leaderboard,
+      data: { leaderboard },
     },
   ];
 
@@ -55,7 +56,7 @@ export const createEntryHandler = async (
 };
 
 enum CreateEntryOption {
-  leaderboardId = "leaderboarid",
+  leaderboardId = "leaderboardid",
   time = "time",
   driver = "driver",
   notes = "notes",

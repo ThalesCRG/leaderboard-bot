@@ -2,6 +2,7 @@ import {
   CacheType,
   Client,
   CommandInteraction,
+  DMChannel,
   Intents,
   Interaction,
   TextBasedChannel,
@@ -9,19 +10,21 @@ import {
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
 
-import legacyCommands from "./legacy-commands.json";
-
-import handlers, { commandList } from "./handlers";
-import { useLegacyInteractionHandling } from "./legacy-interaction-handler";
+import handlers, { commands } from "./handlers";
 import {
+  Command,
   HandlerResponse,
   HandlerResponseMessage,
   PostAction,
   PostActionType,
 } from "../types";
-import { printFilteredLeaderboard } from "../utils/messageUtils";
+import {
+  printFilteredLeaderboard,
+  printLeaderboard,
+  printMultipleLeaderboards,
+} from "../utils/messageUtils";
 
-const client = new Client({
+export const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
@@ -32,32 +35,40 @@ const client = new Client({
 
 export async function initConnection(token: string, appId: string) {
   console.log("trying bot login...");
-
   await client.login(token);
-
   console.log("Bot login successful");
 
   const rest = new REST({ version: "9" }).setToken(token);
 
-  console.log("Started refreshing application (/) commands.");
+  const remoteCommands = await rest.get(Routes.applicationCommands(appId));
 
-  const commands = commandList.concat(legacyCommands);
-  const response = (await rest.put(Routes.applicationCommands(appId), {
-    body: commands,
-  })) as Array<{ id: string; name: string }>;
+  const commandsUpToDate = compareCommandLists(
+    commands,
+    remoteCommands as Command[]
+  );
+
+  if (commandsUpToDate === false) {
+    console.log("Started refreshing application (/) commands.");
+
+    const response = (await rest.put(Routes.applicationCommands(appId), {
+      body: commands,
+    })) as Array<{ id: string; name: string }>;
+
+    const updatedCommands = response.map((cmd) => {
+      return { id: cmd.id, name: cmd.name };
+    });
+    console.log("updated commands", updatedCommands);
+  } else {
+    console.log("all commands up to date");
+  }
 
   client.on("interactionCreate", handleInteractions);
-
-  const cmdList = response.map((cmd) => {
-    return { id: cmd.id, name: cmd.name };
-  });
-  console.log("updated commands", cmdList);
 }
 
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
   if (interaction.isCommand()) {
     // TODO: this is not needed, is it?
-    if (!interaction.guild || !interaction.user?.id) {
+    if (!interaction.user?.id) {
       throw new Error("what shall i do if mandatory data is not present?");
     }
 
@@ -66,15 +77,12 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
     let response: HandlerResponse = { message: "no response retrieved" };
 
     if (handlers[interaction.commandName] === undefined) {
-      console.log(
-        `using legacy handler for command ${interaction.commandName}`
-      );
-      response.message = await useLegacyInteractionHandling(interaction);
+      console.log(`unexpected command: ${interaction.commandName}`);
     } else {
       console.log(
         `trying to use modern handler for command ${interaction.commandName}`
       );
-      const definition = commandList.find(
+      const definition = commands.find(
         (cmd) => cmd.name === interaction.commandName
       );
 
@@ -134,12 +142,81 @@ const handlePostAction = (
   action: PostAction,
   interaction: Interaction<CacheType>
 ) => {
-  if (action.action === PostActionType.printLeaderboardFiltered) {
-    printFilteredLeaderboard(
-      action.data,
-      interaction.channel as TextBasedChannel
-    );
+  const channel =
+    action.data.channel ?? (interaction.channel as TextBasedChannel);
+
+  if (
+    action.action === PostActionType.printLeaderboardFiltered &&
+    action.data.leaderboard
+  ) {
+    printFilteredLeaderboard(action.data.leaderboard, channel);
+  } else if (
+    action.action === PostActionType.printLeaderboard &&
+    action.data.leaderboard
+  ) {
+    printLeaderboard(action.data.leaderboard, channel);
+  } else if (
+    action.action === PostActionType.printMultipleLeaderboards &&
+    action.data.leaderboards
+  ) {
+    printMultipleLeaderboards(action.data.leaderboards, channel);
   } else {
-    console.error(`could not execute post action ${action.action}`);
+    console.error(
+      `could not execute post action ${action.action}. action name not found or data not correct`
+    );
   }
+};
+
+export const getDMChannelToUser = async (
+  userId: string
+): Promise<DMChannel | null> => {
+  const user = await client.users.fetch(userId);
+  if (!user) return null;
+  const channel = await user.createDM(true);
+  return channel || null;
+};
+
+const compareCommandLists = (local: Command[], remote: Command[]): boolean => {
+  if (local.length !== remote.length) {
+    console.log("local and remote commands are not equal by count.");
+    return false;
+  }
+
+  const localNames = mapCommandSimple(local);
+  const remoteNames = mapCommandSimple(remote);
+  if (localNames !== remoteNames) {
+    console.log("local and remote commands are not equal by name.");
+    return false;
+  }
+
+  const localOptions = local
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(mapCommandExtended);
+  const remoteOptions = remote
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(mapCommandExtended);
+
+  if (JSON.stringify(localOptions) !== JSON.stringify(remoteOptions)) {
+    console.log("local and remote commands are not equal by deep comparison.");
+    return false;
+  }
+
+  return true;
+};
+
+const mapCommandSimple = (commands: Command[]) => {
+  return commands
+    .map((c) => c.name)
+    .sort()
+    .join(",");
+};
+
+const mapCommandExtended = (c: Command) => {
+  return {
+    name: c.name,
+    description: c.description,
+    options: c.options?.map((o) =>
+      [o.name, o.description, o.type, o.required || false].join(",")
+    ),
+  };
 };

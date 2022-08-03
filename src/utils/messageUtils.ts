@@ -23,12 +23,20 @@ export async function printLeaderboard(
   }
 }
 
+export async function printMultipleLeaderboards(
+  leaderboards: ILeaderboardEntity[],
+  channel: TextBasedChannel
+) {
+  for (const leaderboard of leaderboards) {
+    printLeaderboard(leaderboard, channel);
+  }
+}
+
 export function printFilteredLeaderboard(
   leaderboard: ILeaderboardEntity,
   channel: TextBasedChannel
 ) {
   if (!leaderboard || !channel) return;
-
   const entries = parseEntries(getBestPerPerson(leaderboard));
 
   const embeds = generateEmbeds(leaderboard, entries);

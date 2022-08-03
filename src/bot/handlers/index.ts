@@ -4,18 +4,41 @@ import {
   createLeaderboardHandler,
 } from "./create-leaderboard";
 import { createEntryCommand, createEntryHandler } from "./create-entry";
-import cloneleaderboard from "./cloneleaderboard";
-import allleaderboards from "./allleaderboards";
-import deleteleaderboard from "./deleteleaderboard";
-import addallowence from "./addallowence";
-import removeallowence from "./removeallowence";
-import help from "./help";
-import { myleaderboards } from "./myleaderboards";
-import setprotected from "./set-protected";
+import {
+  deleteLeaderboardCommand,
+  deleteLeaderboardHandler,
+} from "./delete-leaderboard";
+import { setProtectedCommand, setProtectedHandler } from "./set-protected";
+import { addallowenceCommand, addallowenceHandler } from "./add-allowence";
+import {
+  cloneLeaderboardCommand,
+  cloneLeaderboardHandler,
+} from "./clone-leaderboard";
+import {
+  removeAllowenceCommand,
+  removeAllowenceHandler,
+} from "./remove-allowence";
+import {
+  allLeaderboardsCommand,
+  allLeaderboardsHandler,
+} from "./all-leaderboards";
+import {
+  myLeaderboardsCommand,
+  myleaderboardsHandler,
+} from "./my-leaderboards";
+import { helpCommand, helpHandler } from "./help";
 
-export const commandList: Array<Command> = [
+export const commands: Array<Command> = [
   createLeaderboardCommand,
   createEntryCommand,
+  setProtectedCommand,
+  addallowenceCommand,
+  cloneLeaderboardCommand,
+  removeAllowenceCommand,
+  deleteLeaderboardCommand,
+  allLeaderboardsCommand,
+  myLeaderboardsCommand,
+  helpCommand,
 ];
 
 /**
@@ -24,18 +47,14 @@ export const commandList: Array<Command> = [
 const handlers: { [key: string]: any } = {
   [createLeaderboardCommand.name]: createLeaderboardHandler,
   [createEntryCommand.name]: createEntryHandler,
-};
-
-export const legacyHandlers: { [key: string]: any } = {
-  cloneleaderboard,
-  deleteleaderboard,
-  allleaderboards,
-  addallowence,
-  removeallowence,
-  myleaderboards,
-  setprotected,
-
-  help,
+  [setProtectedCommand.name]: setProtectedHandler,
+  [addallowenceCommand.name]: addallowenceHandler,
+  [cloneLeaderboardCommand.name]: cloneLeaderboardHandler,
+  [removeAllowenceCommand.name]: removeAllowenceHandler,
+  [deleteLeaderboardCommand.name]: deleteLeaderboardHandler,
+  [allLeaderboardsCommand.name]: allLeaderboardsHandler,
+  [myLeaderboardsCommand.name]: myleaderboardsHandler,
+  [helpCommand.name]: helpHandler,
 };
 
 export default handlers;
