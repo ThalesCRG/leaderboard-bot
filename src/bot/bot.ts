@@ -40,21 +40,23 @@ export async function initConnection(token: string, appId: string) {
 
   console.log("Bot login successful");
 
-  const rest = new REST({ version: "9" }).setToken(token);
+  if (process.argv.indexOf("noCmdReg") === -1) {
+    const rest = new REST({ version: "9" }).setToken(token);
 
-  console.log("Started refreshing application (/) commands.");
+    console.log("Started refreshing application (/) commands.");
 
-  const commands = commandList.concat(legacyCommands);
-  const response = (await rest.put(Routes.applicationCommands(appId), {
-    body: commands,
-  })) as Array<{ id: string; name: string }>;
+    const commands = commandList.concat(legacyCommands);
+    const response = (await rest.put(Routes.applicationCommands(appId), {
+      body: commands,
+    })) as Array<{ id: string; name: string }>;
+
+    const cmdList = response.map((cmd) => {
+      return { id: cmd.id, name: cmd.name };
+    });
+    console.log("updated commands", cmdList);
+  }
 
   client.on("interactionCreate", handleInteractions);
-
-  const cmdList = response.map((cmd) => {
-    return { id: cmd.id, name: cmd.name };
-  });
-  console.log("updated commands", cmdList);
 }
 
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
