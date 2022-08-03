@@ -1,4 +1,4 @@
-import { MessageEmbedOptions, WebhookEditMessageOptions } from "discord.js";
+import { MessageEmbedOptions } from "discord.js";
 import { Command, HandlerResponse } from "../../types";
 import { CommandNames } from "../command-names";
 
