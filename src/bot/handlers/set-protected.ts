@@ -6,6 +6,7 @@ import {
 } from "../../types";
 import { setProtected } from "../../database/database";
 import { CommandNames } from "../command-names";
+import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 
 export class SetProtected {
   leaderboardId: string;
@@ -17,7 +18,7 @@ export class SetProtected {
   }
 
   get isValid() {
-    return this.leaderboardId.match("^[0-9a-fA-F]{24}$");
+    return this.leaderboardId.match(LEADERBOARDID_REGEX);
   }
 }
 

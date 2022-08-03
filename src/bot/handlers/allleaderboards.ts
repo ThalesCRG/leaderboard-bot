@@ -7,7 +7,7 @@ export default async function (interaction: Interaction): Promise<string> {
   const command = interaction as CommandInteraction;
 
   const guildId = command.guildId;
-  if (!guildId) return "There was an error. Please try again";
+  if (!guildId) return "This command is only available on Discord Servers not on DMs";
 
   const leaderboards = await getAllLeaderboardsOfGuild(guildId);
   const channel = command.channel;

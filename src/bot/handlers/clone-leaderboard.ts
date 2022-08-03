@@ -7,6 +7,7 @@ import {
   HandlerResponse,
   PostActionType,
 } from "../../types";
+import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { CommandNames } from "../command-names";
 
 export async function cloneLeaderboardHandler(
@@ -52,7 +53,7 @@ export class CloneLeaderboard {
   }
 
   get isValid() {
-    return this.leaderboardId.match("^[0-9a-fA-F]{24}$");
+    return this.leaderboardId.match(LEADERBOARDID_REGEX);
   }
 }
 

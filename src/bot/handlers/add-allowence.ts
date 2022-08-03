@@ -6,6 +6,7 @@ import {
   DiscordDataTypes,
   HandlerResponse,
 } from "../../types";
+import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { CommandNames } from "../command-names";
 
 export class AddAllowence {
@@ -13,14 +14,14 @@ export class AddAllowence {
   userId: string;
   executorId: string;
   constructor(data: DataHolder, executorId: string) {
-    this.leaderboardId = data.getString("leaderboardid", true);
-    this.userId = data.getUser("user", true).id;
+    this.leaderboardId = data.getString(AddAllowenceOption.leaderboardId, true);
+    this.userId = data.getUser(AddAllowenceOption.user, true).id;
     this.executorId = executorId;
   }
 
   get isValid() {
     return (
-      this.leaderboardId.match("^[0-9a-fA-F]{24}$") && this.userId.length > 0
+      this.leaderboardId.match(LEADERBOARDID_REGEX) && this.userId.length > 0
     );
   }
 }

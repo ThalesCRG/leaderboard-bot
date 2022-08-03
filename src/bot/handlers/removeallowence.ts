@@ -1,40 +1,68 @@
-import { CommandInteraction, Interaction } from "discord.js";
 import { removeAllowence } from "../../database/database";
+import {
+  Command,
+  DataHolder,
+  DiscordDataTypes,
+  HandlerResponse,
+} from "../../types";
+import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
+import { CommandNames } from "../command-names";
 
-export default async function (interaction: Interaction): Promise<string> {
-  if (!interaction) return "There was an error. Please try again";
-
-  const command = interaction as CommandInteraction;
-
-  const user = command.options.getUser("user");
-  if (!user) {
-    return "There was an error. Please try again";
+export class RemoveAllowence {
+  leaderboardId: string;
+  userId: string;
+  constructor(data: DataHolder) {
+    this.leaderboardId = data.getString(
+      removeAllowenceOptions.leaderboardid,
+      true
+    );
+    this.userId = data.getUser(removeAllowenceOptions.user, true).id;
   }
-
-  const leaderboard = command.options.getString("leaderboardid");
-  if (!leaderboard) return "There was an error. Please try again";
-
-  const executor = command.user.id;
-
-  await removeAllowence(leaderboard, user.id, executor);
-  return `Removed <@${user.id}> from Leaderboard ${leaderboard}`;
+  get isValid() {
+    return (
+      this.leaderboardId.match(LEADERBOARDID_REGEX) && this.userId.length > 0
+    );
+  }
 }
 
-// {
-//   name: "addallowence",
-//   description: "You can add other people to be able to add entries!",
-//   options: [
-//     {
-//       name: "leaderboardid",
-//       description: "To what leaderboard shall the user be added?",
-//       type: 3,
-//       required: true,
-//     },
-//     {
-//       name: "user",
-//       description: "Who shall be able to interact with your leaderboard?",
-//       required: false,
-//       type: 6,
-//     },
-//   ],
-// }
+export async function removeAllowenceHandler(
+  data: DataHolder,
+  executorId: string
+): Promise<HandlerResponse> {
+  const model = new RemoveAllowence(data);
+
+  if (!model.isValid)
+    throw new Error(
+      "Invalid Parameters. Please check the the Leaderboard ID and/or the user."
+    );
+
+  const result = await removeAllowence(model, executorId);
+  return {
+    message: `Removed <@${result.userId}> from Leaderboard ${result.leaderboardId}`,
+  };
+}
+
+enum removeAllowenceOptions {
+  leaderboardid = "leaderboardid",
+  user = "user",
+}
+
+export const removeAllowenceCommand: Command = {
+  name: CommandNames.removeAllowence,
+  description: "You can remove other people to be able to add entries!",
+  options: [
+    {
+      name: removeAllowenceOptions.leaderboardid,
+      description: "To what leaderboard shall the user be removed?",
+      type: DiscordDataTypes.STRING,
+      required: true,
+    },
+    {
+      name: removeAllowenceOptions.user,
+      description:
+        "Who shall not be able to interact with your leaderboard anymore?",
+      type: DiscordDataTypes.USER,
+      required: true,
+    },
+  ],
+};
