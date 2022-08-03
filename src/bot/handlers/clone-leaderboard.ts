@@ -20,16 +20,11 @@ export async function cloneLeaderboardHandler(
 
   const leaderboard = await getLeaderboard(model.leaderboardId);
 
-  let postAction;
-  if (model.allentries) {
-    postAction = PostActionType.printLeaderboard;
-  } else {
-    postAction = PostActionType.printLeaderboardFiltered;
-  }
-
   const postActions = [
     {
-      action: postAction,
+      action: model.allentries
+        ? PostActionType.printLeaderboard
+        : PostActionType.printLeaderboardFiltered,
       data: { leaderboard },
     },
   ];

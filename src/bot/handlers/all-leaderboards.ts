@@ -23,7 +23,7 @@ export async function allLeaderboardsHandler(
     message: "Here you are!",
     postActions: [
       {
-        action: PostActionType.printLeaderboardFiltered,
+        action: PostActionType.printMultipleLeaderboards,
         data: { leaderboards },
       },
     ],

@@ -8,37 +8,42 @@ momentDurationFormatSetup(moment);
 const MAX_FIELD_LENGTH = 1024;
 
 export async function printLeaderboard(
+  leaderboard: ILeaderboardEntity,
+  channel: TextBasedChannel
+) {
+  if (!leaderboard || !channel) return;
+  const entries = parseEntries(leaderboard.entries);
+
+  const embeds = generateEmbeds(leaderboard, entries);
+
+  try {
+    await channel.send({ embeds: [embeds] });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function printMultipleLeaderboards(
   leaderboards: ILeaderboardEntity[],
   channel: TextBasedChannel
 ) {
   for (const leaderboard of leaderboards) {
-    if (!leaderboard || !channel) return;
-    const entries = parseEntries(leaderboard.entries);
-
-    const embeds = generateEmbeds(leaderboard, entries);
-
-    try {
-      await channel.send({ embeds: [embeds] });
-    } catch (error) {
-      console.log(error);
-    }
+    printLeaderboard(leaderboard, channel);
   }
 }
 
 export function printFilteredLeaderboard(
-  leaderboards: ILeaderboardEntity[],
+  leaderboard: ILeaderboardEntity,
   channel: TextBasedChannel
 ) {
-  for (const leaderboard of leaderboards) {
-    if (!leaderboard || !channel) return;
-    const entries = parseEntries(getBestPerPerson(leaderboard));
+  if (!leaderboard || !channel) return;
+  const entries = parseEntries(getBestPerPerson(leaderboard));
 
-    const embeds = generateEmbeds(leaderboard, entries);
-    try {
-      channel.send({ embeds: [embeds] });
-    } catch (error) {
-      console.log(error);
-    }
+  const embeds = generateEmbeds(leaderboard, entries);
+  try {
+    channel.send({ embeds: [embeds] });
+  } catch (error) {
+    console.log(error);
   }
 }
 

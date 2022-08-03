@@ -23,7 +23,7 @@ export async function myleaderboardsHandler(
     message: "Hang on! I'll send you a DM!",
     postActions: [
       {
-        action: PostActionType.printLeaderboardFiltered,
+        action: PostActionType.printMultipleLeaderboards,
         data: { leaderboards, channel },
       },
     ],

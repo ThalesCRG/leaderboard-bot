@@ -20,6 +20,7 @@ import {
 import {
   printFilteredLeaderboard,
   printLeaderboard,
+  printMultipleLeaderboards,
 } from "../utils/messageUtils";
 
 export const client = new Client({
@@ -134,18 +135,28 @@ const handlePostAction = (
   action: PostAction,
   interaction: Interaction<CacheType>
 ) => {
-  if (action.action === PostActionType.printLeaderboardFiltered) {
-    printFilteredLeaderboard(
-      action.data.leaderboards,
-      action.data.channel ?? (interaction.channel as TextBasedChannel)
-    );
-  } else if (action.action === PostActionType.printLeaderboard) {
-    printLeaderboard(
-      action.data.leaderboards,
-      action.data.channel ?? (interaction.channel as TextBasedChannel)
-    );
+  const channel =
+    action.data.channel ?? (interaction.channel as TextBasedChannel);
+
+  if (
+    action.action === PostActionType.printLeaderboardFiltered &&
+    action.data.leaderboard
+  ) {
+    printFilteredLeaderboard(action.data.leaderboard, channel);
+  } else if (
+    action.action === PostActionType.printLeaderboard &&
+    action.data.leaderboard
+  ) {
+    printLeaderboard(action.data.leaderboard, channel);
+  } else if (
+    action.action === PostActionType.printMultipleLeaderboards &&
+    action.data.leaderboards
+  ) {
+    printMultipleLeaderboards(action.data.leaderboards, channel);
   } else {
-    console.error(`could not execute post action ${action.action}`);
+    console.error(
+      `could not execute post action ${action.action}. action name not found or data not correct`
+    );
   }
 };
 

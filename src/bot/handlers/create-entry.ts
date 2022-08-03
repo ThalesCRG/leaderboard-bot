@@ -45,7 +45,7 @@ export const createEntryHandler = async (
   const postActions = [
     {
       action: PostActionType.printLeaderboardFiltered,
-      data: { leaderboards: [leaderboard] },
+      data: { leaderboard },
     },
   ];
 
