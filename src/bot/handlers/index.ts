@@ -11,7 +11,7 @@ import removeallowence from "./removeallowence";
 import help from "./help";
 import { myleaderboards } from "./myleaderboards";
 import { setProtectedCommand, setProtectedHandler } from "./set-protected";
-import { addallowenceCommand, addallowenceHandler } from "./addallowence";
+import { addallowenceCommand, addallowenceHandler } from "./add-allowence";
 
 export const commandList: Array<Command> = [
   createLeaderboardCommand,

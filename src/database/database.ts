@@ -1,5 +1,5 @@
-import { connect, connection, Model, model, Schema } from "mongoose";
-import { AddAllowence } from "../bot/handlers/addallowence";
+import { connect, connection, model, Schema } from "mongoose";
+import { AddAllowence } from "../bot/handlers/add-allowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
 import { SetProtected } from "../bot/handlers/set-protected";
