@@ -2,6 +2,7 @@ import { connect, connection, model, Schema } from "mongoose";
 import { AddAllowence } from "../bot/handlers/add-allowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
+import { DeleteLeaderboard } from "../bot/handlers/delete-leaderboard";
 import { RemoveAllowence } from "../bot/handlers/removeallowence";
 import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
@@ -242,17 +243,20 @@ export async function removeAllowence(
 }
 
 export async function deleteLeaderboard(
-  leaderboardId: string,
+  model: DeleteLeaderboard,
   executor: string
 ) {
-  const leaderboard = await Leaderboard.findById(leaderboardId);
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
 
   if (leaderboard.creatorId !== executor)
-    throw new Error("Not authorized to deleteLeaderboard");
+    throw new Error(
+      "Not authorized to delete Leaderboard. Only the creator of the leaderboard is allowed to delete."
+    );
 
   try {
     await leaderboard.remove();
+    return { leaderboardId: leaderboard.id };
   } catch (error) {
     console.log(error);
   }

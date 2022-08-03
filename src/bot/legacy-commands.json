@@ -5,18 +5,6 @@
   },
 
   {
-    "name": "deleteleaderboard",
-    "description": "Deletes a Leaderboard",
-    "options": [
-      {
-        "name": "leaderboardid",
-        "description": "Id of the Leaderboard that shall be deleted",
-        "type": 3,
-        "required": true
-      }
-    ]
-  },
-  {
     "name": "help",
     "description": "Prints a help message"
   },
