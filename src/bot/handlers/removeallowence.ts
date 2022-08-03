@@ -13,10 +13,10 @@ export class RemoveAllowence {
   userId: string;
   constructor(data: DataHolder) {
     this.leaderboardId = data.getString(
-      removeAllowenceOptions.leaderboardid,
+      RemoveAllowanceOption.leaderboardid,
       true
     );
-    this.userId = data.getUser(removeAllowenceOptions.user, true).id;
+    this.userId = data.getUser(RemoveAllowanceOption.user, true).id;
   }
   get isValid() {
     return (
@@ -42,7 +42,7 @@ export async function removeAllowenceHandler(
   };
 }
 
-enum removeAllowenceOptions {
+enum RemoveAllowanceOption {
   leaderboardid = "leaderboardid",
   user = "user",
 }
@@ -52,13 +52,13 @@ export const removeAllowenceCommand: Command = {
   description: "You can remove other people to be able to add entries!",
   options: [
     {
-      name: removeAllowenceOptions.leaderboardid,
+      name: RemoveAllowanceOption.leaderboardid,
       description: "To what leaderboard shall the user be removed?",
       type: DiscordDataTypes.STRING,
       required: true,
     },
     {
-      name: removeAllowenceOptions.user,
+      name: RemoveAllowanceOption.user,
       description:
         "Who shall not be able to interact with your leaderboard anymore?",
       type: DiscordDataTypes.USER,

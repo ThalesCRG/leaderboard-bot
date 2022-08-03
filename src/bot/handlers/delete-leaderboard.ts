@@ -13,7 +13,7 @@ export class DeleteLeaderboard {
   leaderboardId: string;
   constructor(data: DataHolder) {
     this.leaderboardId = data.getString(
-      deleteLeaderboardOption.leaderboardid,
+      DeleteLeaderboardOption.leaderboardid,
       true
     );
   }
@@ -40,7 +40,7 @@ export async function deleteLeaderboardHandler(
   return { message: `Deleted Leaderboard ${result.leaderboardId}` };
 }
 
-enum deleteLeaderboardOption {
+enum DeleteLeaderboardOption {
   leaderboardid = "leaderboardid",
 }
 
@@ -49,7 +49,7 @@ export const deleteLeaderboardCommand: Command = {
   description: "Deletes a Leaderboard",
   options: [
     {
-      name: deleteLeaderboardOption.leaderboardid,
+      name: DeleteLeaderboardOption.leaderboardid,
       description: "Id of the Leaderboard that shall be deleted",
       type: DiscordDataTypes.STRING,
       required: true,
