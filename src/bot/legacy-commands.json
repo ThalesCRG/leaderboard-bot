@@ -3,24 +3,6 @@
     "name": "allleaderboards",
     "description": "posts all leaderboards that were created on this discord server"
   },
-  {
-    "name": "removeallowence",
-    "description": "You can remove other people to be able to add entries!",
-    "options": [
-      {
-        "name": "leaderboardid",
-        "description": "To what leaderboard shall the user be removed?",
-        "type": 3,
-        "required": true
-      },
-      {
-        "name": "user",
-        "description": "Who shall not be able to interact with your leaderboard anymore?",
-        "required": true,
-        "type": 6
-      }
-    ]
-  },
 
   {
     "name": "deleteleaderboard",

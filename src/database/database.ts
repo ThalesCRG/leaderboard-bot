@@ -2,6 +2,7 @@ import { connect, connection, model, Schema } from "mongoose";
 import { AddAllowence } from "../bot/handlers/add-allowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
+import { RemoveAllowence } from "../bot/handlers/removeallowence";
 import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
 import { IEntryEntity, ILeaderboardEntity } from "./database-types";
@@ -213,24 +214,31 @@ export async function addAllowence(
 }
 
 export async function removeAllowence(
-  leaderboardId: string,
-  userId: string,
-  executor: string
-) {
-  const leaderboard = await Leaderboard.findById(leaderboardId);
+  model: RemoveAllowence,
+  executorId: string
+): Promise<RemoveAllowence> {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
-  if (leaderboard.creatorId !== executor)
+
+  if (leaderboard.creatorId !== executorId)
     throw new Error(
       "Only the creator of the leaderboard can add or remove allowences."
     );
 
-  if (!leaderboard.allowedList) return;
-  if (leaderboard.allowedList.find((entry: any) => entry === userId))
-    leaderboard.allowedList = leaderboard.allowedList.filter(
-      (entry: any) => entry !== userId
-    );
+  if (!leaderboard.allowedList) return model;
 
+  if (leaderboard.allowedList.find((entry: any) => entry === model.userId)) {
+    leaderboard.allowedList = leaderboard.allowedList.filter(
+      (entry: any) => entry !== model.userId
+    );
+  } else
+    throw new Error(
+      `<@${
+        model.userId
+      }> was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
+    );
   await leaderboard.save();
+  return model;
 }
 
 export async function deleteLeaderboard(
