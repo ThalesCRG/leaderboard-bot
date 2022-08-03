@@ -67,59 +67,30 @@ export async function initConnection(token: string, appId: string) {
 
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
   if (interaction.isCommand()) {
-    // TODO: this is not needed, is it?
-    if (!interaction.user?.id) {
-      throw new Error("what shall i do if mandatory data is not present?");
-    }
-
     await interaction.reply({ content: "wait a second", ephemeral: true });
 
     let response: HandlerResponse = { message: "no response retrieved" };
 
-    if (handlers[interaction.commandName] === undefined) {
-      console.log(`unexpected command: ${interaction.commandName}`);
-    } else {
+    try {
+      response = await handlers[interaction.commandName](
+        interaction.options,
+        interaction.user?.id,
+        interaction.guildId
+      );
+
       console.log(
-        `trying to use modern handler for command ${interaction.commandName}`
-      );
-      const definition = commands.find(
-        (cmd) => cmd.name === interaction.commandName
+        `handler for ${interaction.commandName} returned with response`,
+        response.message
       );
 
-      if (!definition) {
-        return console.error(
-          `could not find command definition for ${interaction.commandName}`
-        );
+      if (response.postActions?.length) {
+        response.postActions.forEach((action) => {
+          handlePostAction(action, interaction);
+        });
       }
-
-      if (!handlers[interaction.commandName]) {
-        return console.error(
-          `missing handler implementation for ${interaction.commandName}.`
-        );
-      }
-
-      try {
-        response = await handlers[interaction.commandName](
-          interaction.options,
-          interaction.user?.id,
-          interaction.guildId
-        );
-      } catch (error) {
-        console.log("an error occurred. sending error response");
-        changeReply(interaction, `${error}`);
-        return;
-      }
-    }
-
-    console.log(
-      `handler for ${interaction.commandName} returned with response`,
-      response.message
-    );
-
-    if (response.postActions?.length) {
-      response.postActions.forEach((action) => {
-        handlePostAction(action, interaction);
-      });
+    } catch (error) {
+      console.error("an error occurred. sending error response", error);
+      response.message = `${error}`;
     }
 
     changeReply(interaction, response.message);
