@@ -1,4 +1,5 @@
 import { connect, connection, Model, model, Schema } from "mongoose";
+import { AddAllowence } from "../bot/handlers/addallowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
 import { SetProtected } from "../bot/handlers/set-protected";
@@ -187,19 +188,28 @@ export function getAllowedPersons(
 }
 
 export async function addAllowence(
-  leaderboardId: string,
-  userId: string,
-  executor: string
-) {
-  const leaderboard = await Leaderboard.findById(leaderboardId);
+  model: AddAllowence,
+  executorId: string
+): Promise<{ userId: string; leaderboardId: string } | undefined> {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
-  if (leaderboard.creatorId !== executor) throw new Error("Not allowed.");
+  if (leaderboard.creatorId !== executorId)
+    throw new Error(
+      "Only the creator of the leaderboard can add or remove allowences."
+    );
 
-  if (!leaderboard.allowedList) leaderboard.allowedList = [userId];
+  if (!leaderboard.allowedList) leaderboard.allowedList = [model.userId];
   else {
-    leaderboard.allowedList.push(userId);
+    if (!leaderboard.allowedList.find((entry) => entry === model.userId)) {
+      leaderboard.allowedList.push(model.userId);
+    } else throw new Error("This User is already allowed to create Entries.");
   }
-  await leaderboard.save();
+  try {
+    await leaderboard.save();
+    return { userId: model.userId, leaderboardId: model.leaderboardId };
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export async function removeAllowence(
@@ -209,7 +219,10 @@ export async function removeAllowence(
 ) {
   const leaderboard = await Leaderboard.findById(leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
-  if (leaderboard.creatorId !== executor) throw new Error("Not allowed.");
+  if (leaderboard.creatorId !== executor)
+    throw new Error(
+      "Only the creator of the leaderboard can add or remove allowences."
+    );
 
   if (!leaderboard.allowedList) return;
   if (leaderboard.allowedList.find((entry: any) => entry === userId))

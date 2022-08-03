@@ -1,40 +1,74 @@
 import { CommandInteraction, Interaction } from "discord.js";
 import { addAllowence } from "../../database/database";
+import {
+  Command,
+  DataHolder,
+  DiscordDataTypes,
+  HandlerResponse,
+} from "../../types";
+import { CommandNames } from "../command-names";
 
-export default async function (interaction: Interaction): Promise<string> {
-  if (!interaction) return "There was an error. Please try again";
-  const command = interaction as CommandInteraction;
-
-  const user = command.options.getUser("user");
-  if (!user) {
-    return "There was an error. Please try again";
+export class AddAllowence {
+  leaderboardId: string;
+  userId: string;
+  executorId: string;
+  constructor(data: DataHolder, executorId: string) {
+    this.leaderboardId = data.getString("leaderboardid", true);
+    this.userId = data.getUser("user", true).id;
+    this.executorId = executorId;
   }
 
-  const leaderboard = command.options.getString("leaderboardid");
-  if (!leaderboard) return "There was an error. Please try again";
-
-  const executor = command.user.id;
-
-  await addAllowence(leaderboard, user.id, executor);
-
-  return `Added <@${user.id}> to Leaderboard ${leaderboard}`;
+  get isValid() {
+    return (
+      this.leaderboardId.match("^[0-9a-fA-F]{24}$") && this.userId.length > 0
+    );
+  }
 }
 
-// {
-//   name: "addallowence",
-//   description: "You can add other people to be able to add entries!",
-//   options: [
-//     {
-//       name: "leaderboardid",
-//       description: "To what leaderboard shall the user be added?",
-//       type: 3,
-//       required: true,
-//     },
-//     {
-//       name: "user",
-//       description: "Who shall be able to interact with your leaderboard?",
-//       required: false,
-//       type: 6,
-//     },
-//   ],
-// }
+export const addallowenceHandler = async (
+  data: DataHolder,
+  user: string
+): Promise<HandlerResponse> => {
+  const model = new AddAllowence(data, user);
+
+  if (!model.isValid) {
+    console.error("Add allowance model is not valid", JSON.stringify(model));
+    throw new Error("Add allowance model is not valid");
+  }
+
+  const newAllowence = await addAllowence(model, user);
+
+  if (newAllowence) {
+    return {
+      message: `Added <@${newAllowence?.userId}> to Leaderboard ${newAllowence?.leaderboardId}`,
+    };
+  } else {
+    return {
+      message: "There was an Error in the Database. Please try again later.",
+    };
+  }
+};
+
+enum AddAllowenceOption {
+  leaderboardId = "leaderboardid",
+  user = "user",
+}
+
+export const addallowenceCommand: Command = {
+  name: CommandNames.addAllowence,
+  description: "You can add other people to be able to add entries!",
+  options: [
+    {
+      name: AddAllowenceOption.leaderboardId,
+      description: "To what leaderboard shall the user be added?",
+      type: DiscordDataTypes.STRING,
+      required: true,
+    },
+    {
+      name: AddAllowenceOption.user,
+      description: "Who shall be able to interact with your leaderboard?",
+      type: DiscordDataTypes.USER,
+      required: true,
+    },
+  ],
+};

@@ -20,9 +20,6 @@ export const useLegacyInteractionHandling = async function (
     case "cloneleaderboard":
       reply = await legacyHandlers.cloneleaderboard(interaction);
       break;
-    case "addallowence":
-      reply = await legacyHandlers.addallowence(interaction);
-      break;
     case "removeallowence":
       reply = await legacyHandlers.removeallowence(interaction);
       break;
@@ -31,9 +28,6 @@ export const useLegacyInteractionHandling = async function (
       break;
     case "help":
       reply = await legacyHandlers.help(interaction);
-      break;
-    case "setprotected":
-      reply = await legacyHandlers.setprotected(interaction);
       break;
     case "myleaderboards":
       reply = await legacyHandlers.myleaderboards(interaction);

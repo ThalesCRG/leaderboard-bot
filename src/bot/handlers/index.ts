@@ -7,16 +7,17 @@ import { createEntryCommand, createEntryHandler } from "./create-entry";
 import cloneleaderboard from "./cloneleaderboard";
 import allleaderboards from "./allleaderboards";
 import deleteleaderboard from "./deleteleaderboard";
-import addallowence from "./addallowence";
 import removeallowence from "./removeallowence";
 import help from "./help";
 import { myleaderboards } from "./myleaderboards";
 import { setProtectedCommand, setProtectedHandler } from "./set-protected";
+import { addallowenceCommand, addallowenceHandler } from "./addallowence";
 
 export const commandList: Array<Command> = [
   createLeaderboardCommand,
   createEntryCommand,
   setProtectedCommand,
+  addallowenceCommand,
 ];
 
 /**
@@ -26,13 +27,14 @@ const handlers: { [key: string]: any } = {
   [createLeaderboardCommand.name]: createLeaderboardHandler,
   [createEntryCommand.name]: createEntryHandler,
   [setProtectedCommand.name]: setProtectedHandler,
+  [addallowenceCommand.name]: addallowenceHandler,
 };
 
 export const legacyHandlers: { [key: string]: any } = {
   cloneleaderboard,
   deleteleaderboard,
   allleaderboards,
-  addallowence,
+
   removeallowence,
   myleaderboards,
 
