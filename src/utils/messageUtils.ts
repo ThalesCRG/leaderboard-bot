@@ -65,7 +65,7 @@ function parseEntries(entries: IEntryEntity[]): string[] {
     result += "\n";
   });
 
-  if (!result) result = "No entires found";
+  if (!result) result = "No entries available.";
   resultArray.push(result);
 
   return resultArray;
