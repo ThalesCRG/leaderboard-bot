@@ -39,7 +39,7 @@ export async function initConnection(token: string, appId: string) {
   console.log("Bot login successful");
 
   const rest = new REST({ version: "9" }).setToken(token);
-  console.log("checking application commands");
+
   const remoteCommands = await rest.get(Routes.applicationCommands(appId));
 
   const commandsUpToDate = compareCommandLists(
@@ -177,16 +177,46 @@ export const getDMChannelToUser = async (
 };
 
 const compareCommandLists = (local: Command[], remote: Command[]): boolean => {
-  if (local.length !== remote.length) return false;
+  if (local.length !== remote.length) {
+    console.log("local and remote commands are not equal by count.");
+    return false;
+  }
 
-  const localNames = local
+  const localNames = mapCommandSimple(local);
+  const remoteNames = mapCommandSimple(remote);
+  if (localNames !== remoteNames) {
+    console.log("local and remote commands are not equal by name.");
+    return false;
+  }
+
+  const localOptions = local
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(mapCommandExtended);
+  const remoteOptions = remote
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(mapCommandExtended);
+
+  if (JSON.stringify(localOptions) !== JSON.stringify(remoteOptions)) {
+    console.log("local and remote commands are not equal by deep comparison.");
+    return false;
+  }
+
+  return true;
+};
+
+const mapCommandSimple = (commands: Command[]) => {
+  return commands
     .map((c) => c.name)
     .sort()
     .join(",");
-  const remoteNames = remote
-    .map((c) => c.name)
-    .sort()
-    .join(",");
+};
 
-  return localNames === remoteNames;
+const mapCommandExtended = (c: Command) => {
+  return {
+    name: c.name,
+    description: c.description,
+    options: c.options?.map((o) =>
+      [o.name, o.description, o.type, o.required || false].join(",")
+    ),
+  };
 };
