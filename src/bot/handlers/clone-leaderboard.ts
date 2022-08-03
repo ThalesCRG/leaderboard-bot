@@ -30,7 +30,7 @@ export async function cloneLeaderboardHandler(
   const postActions = [
     {
       action: postAction,
-      data: leaderboard,
+      data: { leaderboard },
     },
   ];
 

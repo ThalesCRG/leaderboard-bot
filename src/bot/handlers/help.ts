@@ -1,17 +1,21 @@
-import {
-  Interaction,
-  MessageEmbedOptions,
-  WebhookEditMessageOptions,
-} from "discord.js";
+import { MessageEmbedOptions, WebhookEditMessageOptions } from "discord.js";
+import { Command, HandlerResponse } from "../../types";
+import { CommandNames } from "../command-names";
 
-export default async function (interaction: Interaction) {
-  if (!interaction) return "There was an error. Please try again";
-
+export function helpHandler(): HandlerResponse {
   return {
-    content: "We're glad to help:",
-    embeds: [messegeEmbed],
-  } as WebhookEditMessageOptions;
+    message: {
+      content: "We're glad to help:",
+      embeds: [messegeEmbed],
+    },
+  };
 }
+
+export const helpCommand: Command = {
+  name: CommandNames.help,
+  description: "Prints a help message",
+};
+
 const messegeEmbed: MessageEmbedOptions = {
   title: "RDC Leaderboard Bot - Help Message",
   description: "We're happy to help you! Try those commands:",

@@ -5,5 +5,8 @@ export enum CommandNames {
   addAllowence = "addallowence",
   cloneLeaderboard = "cloneleaderboard",
   removeAllowence = "removeallowence",
-  deleteLeaderboard = "deleteleaderboard"
+  deleteLeaderboard = "deleteleaderboard",
+  allLeaderboards = "allleaderboards",
+  myLeaderboards = "myleaderboards",
+  help = "help",
 }

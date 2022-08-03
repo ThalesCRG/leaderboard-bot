@@ -125,6 +125,7 @@ export async function addEntry(
 }
 
 export async function getAllLeaderboardsOfGuild(guildId: string) {
+  if (!guildId) return [];
   const leaderboards = await Leaderboard.find({ guildId: guildId });
   return leaderboards;
 }

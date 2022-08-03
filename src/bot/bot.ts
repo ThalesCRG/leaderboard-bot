@@ -9,10 +9,7 @@ import {
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
 
-import legacyCommands from "./legacy-commands.json";
-
 import handlers, { commandList } from "./handlers";
-import { useLegacyInteractionHandling } from "./legacy-interaction-handler";
 import {
   HandlerResponse,
   HandlerResponseMessage,
@@ -24,7 +21,7 @@ import {
   printLeaderboard,
 } from "../utils/messageUtils";
 
-const client = new Client({
+export const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
@@ -45,7 +42,7 @@ export async function initConnection(token: string, appId: string) {
 
     console.log("Started refreshing application (/) commands.");
 
-    const commands = commandList.concat(legacyCommands);
+    const commands = commandList;
     const response = (await rest.put(Routes.applicationCommands(appId), {
       body: commands,
     })) as Array<{ id: string; name: string }>;
@@ -62,7 +59,7 @@ export async function initConnection(token: string, appId: string) {
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
   if (interaction.isCommand()) {
     // TODO: this is not needed, is it?
-    if (!interaction.guild || !interaction.user?.id) {
+    if (!interaction.user?.id) {
       throw new Error("what shall i do if mandatory data is not present?");
     }
 
@@ -71,10 +68,7 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
     let response: HandlerResponse = { message: "no response retrieved" };
 
     if (handlers[interaction.commandName] === undefined) {
-      console.log(
-        `using legacy handler for command ${interaction.commandName}`
-      );
-      response.message = await useLegacyInteractionHandling(interaction);
+      console.log(`unexpected command: ${interaction.commandName}`);
     } else {
       console.log(
         `trying to use modern handler for command ${interaction.commandName}`
@@ -141,11 +135,14 @@ const handlePostAction = (
 ) => {
   if (action.action === PostActionType.printLeaderboardFiltered) {
     printFilteredLeaderboard(
-      action.data,
-      interaction.channel as TextBasedChannel
+      action.data.leaderboards,
+      action.data.channel ?? (interaction.channel as TextBasedChannel)
     );
   } else if (action.action === PostActionType.printLeaderboard) {
-    printLeaderboard(action.data, interaction.channel as TextBasedChannel);
+    printLeaderboard(
+      action.data.leaderboards,
+      action.data.channel ?? (interaction.channel as TextBasedChannel)
+    );
   } else {
     console.error(`could not execute post action ${action.action}`);
   }

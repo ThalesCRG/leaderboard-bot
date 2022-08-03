@@ -8,34 +8,37 @@ momentDurationFormatSetup(moment);
 const MAX_FIELD_LENGTH = 1024;
 
 export async function printLeaderboard(
-  leaderboard: ILeaderboardEntity,
+  leaderboards: ILeaderboardEntity[],
   channel: TextBasedChannel
 ) {
-  if (!leaderboard || !channel) return;
-  const entries = parseEntries(leaderboard.entries);
+  for (const leaderboard of leaderboards) {
+    if (!leaderboard || !channel) return;
+    const entries = parseEntries(leaderboard.entries);
 
-  const embeds = generateEmbeds(leaderboard, entries);
+    const embeds = generateEmbeds(leaderboard, entries);
 
-  try {
-    await channel.send({ embeds: [embeds] });
-  } catch (error) {
-    console.log(error);
+    try {
+      await channel.send({ embeds: [embeds] });
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
 export function printFilteredLeaderboard(
-  leaderboard: ILeaderboardEntity,
+  leaderboards: ILeaderboardEntity[],
   channel: TextBasedChannel
 ) {
-  if (!leaderboard || !channel) return;
+  for (const leaderboard of leaderboards) {
+    if (!leaderboard || !channel) return;
+    const entries = parseEntries(getBestPerPerson(leaderboard));
 
-  const entries = parseEntries(getBestPerPerson(leaderboard));
-
-  const embeds = generateEmbeds(leaderboard, entries);
-  try {
-    channel.send({ embeds: [embeds] });
-  } catch (error) {
-    console.log(error);
+    const embeds = generateEmbeds(leaderboard, entries);
+    try {
+      channel.send({ embeds: [embeds] });
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
