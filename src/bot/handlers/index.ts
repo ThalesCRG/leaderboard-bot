@@ -17,12 +17,15 @@ import {
 import {
   removeAllowenceCommand,
   removeAllowenceHandler,
-} from "./removeallowence";
+} from "./remove-allowence";
 import {
   allLeaderboardsCommand,
   allLeaderboardsHandler,
 } from "./all-leaderboards";
-import { myLeaderboardsCommand, myleaderboardsHandler } from "./myleaderboards";
+import {
+  myLeaderboardsCommand,
+  myleaderboardsHandler,
+} from "./my-leaderboards";
 import { helpCommand, helpHandler } from "./help";
 
 export const commandList: Array<Command> = [

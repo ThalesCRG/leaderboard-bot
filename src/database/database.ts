@@ -3,7 +3,7 @@ import { AddAllowence } from "../bot/handlers/add-allowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
 import { DeleteLeaderboard } from "../bot/handlers/delete-leaderboard";
-import { RemoveAllowence } from "../bot/handlers/removeallowence";
+import { RemoveAllowence } from "../bot/handlers/remove-allowence";
 import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
 import { IEntryEntity, ILeaderboardEntity } from "./database-types";
