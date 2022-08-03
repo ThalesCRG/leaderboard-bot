@@ -28,7 +28,7 @@ import {
 } from "./my-leaderboards";
 import { helpCommand, helpHandler } from "./help";
 
-export const commandList: Array<Command> = [
+export const commands: Array<Command> = [
   createLeaderboardCommand,
   createEntryCommand,
   setProtectedCommand,

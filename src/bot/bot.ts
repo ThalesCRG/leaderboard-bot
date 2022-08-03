@@ -10,8 +10,9 @@ import {
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/rest/v10";
 
-import handlers, { commandList } from "./handlers";
+import handlers, { commands } from "./handlers";
 import {
+  Command,
   HandlerResponse,
   HandlerResponseMessage,
   PostAction,
@@ -34,25 +35,31 @@ export const client = new Client({
 
 export async function initConnection(token: string, appId: string) {
   console.log("trying bot login...");
-
   await client.login(token);
-
   console.log("Bot login successful");
 
-  if (process.argv.indexOf("noCmdReg") === -1) {
-    const rest = new REST({ version: "9" }).setToken(token);
+  const rest = new REST({ version: "9" }).setToken(token);
+  console.log("checking application commands");
+  const remoteCommands = await rest.get(Routes.applicationCommands(appId));
 
+  const commandsUpToDate = compareCommandLists(
+    commands,
+    remoteCommands as Command[]
+  );
+
+  if (commandsUpToDate === false) {
     console.log("Started refreshing application (/) commands.");
 
-    const commands = commandList;
     const response = (await rest.put(Routes.applicationCommands(appId), {
       body: commands,
     })) as Array<{ id: string; name: string }>;
 
-    const cmdList = response.map((cmd) => {
+    const updatedCommands = response.map((cmd) => {
       return { id: cmd.id, name: cmd.name };
     });
-    console.log("updated commands", cmdList);
+    console.log("updated commands", updatedCommands);
+  } else {
+    console.log("all commands up to date");
   }
 
   client.on("interactionCreate", handleInteractions);
@@ -75,7 +82,7 @@ const handleInteractions = async (interaction: Interaction<CacheType>) => {
       console.log(
         `trying to use modern handler for command ${interaction.commandName}`
       );
-      const definition = commandList.find(
+      const definition = commands.find(
         (cmd) => cmd.name === interaction.commandName
       );
 
@@ -167,4 +174,19 @@ export const getDMChannelToUser = async (
   if (!user) return null;
   const channel = await user.createDM(true);
   return channel || null;
+};
+
+const compareCommandLists = (local: Command[], remote: Command[]): boolean => {
+  if (local.length !== remote.length) return false;
+
+  const localNames = local
+    .map((c) => c.name)
+    .sort()
+    .join(",");
+  const remoteNames = remote
+    .map((c) => c.name)
+    .sort()
+    .join(",");
+
+  return localNames === remoteNames;
 };
