@@ -21,41 +21,46 @@ const messegeEmbed: MessageEmbedOptions = {
   description: "We're happy to help you! Try those commands:",
   color: "#fe6f27",
   fields: [
-    { name: "/createleaderboard", value: "Create a new leaderboard" },
+    { name: CommandNames.createLeaderboard, value: "Create a new leaderboard" },
     {
-      name: "/createentry",
+      name: CommandNames.createEntry,
       value:
-        "Create a new entry. Please pass the leaderboardid of the Leaderboard and your time in this format: MM:SS.sss",
+        "Create a new entry. Please pass the ID of the leaderboard and your time in the format MM:SS.sss",
     },
     {
-      name: "/cloneleaderboard",
-      value: "prints the leaderboard that has the ID you provided",
+      name: CommandNames.cloneLeaderboard,
+      value: "Prints the leaderboard that has the ID you provided",
     },
     {
-      name: "/allleaderboards",
-      value: "prints all leaderboards that were created on this Discord",
+      name: CommandNames.allLeaderboards,
+      value: "Prints all leaderboards that were created on this Discord server",
     },
     {
-      name: "/addallowence",
+      name: CommandNames.addAllowence,
       value:
-        "When a Leaderboard is protected only the creator and allowed person can create entries. With this command you can add somebody to the allowlist",
+        "When a Leaderboard is protected, only the creator and allowed person can create entries. With this command you can add somebody to the list of users, who are allowed to post new times",
     },
-    { name: "/removeallowence", value: "Removes somebody from the allowlist" },
     {
-      name: "/deleteleaderboard",
+      name: CommandNames.removeAllowence,
+      value:
+        "Removes somebody from the list of users, who are allowed to post new times",
+    },
+    {
+      name: CommandNames.deleteLeaderboard,
       value: "Deletes the leaderboard with the ID you provided",
     },
     {
-      name: "/setprotected",
+      name: CommandNames.setProtected,
       value:
-        "You can change the protection status of your leaderboard. If a Leaderboard is protected only allowed person can create entries.",
+        "You can change the protection status of your leaderboard. If a Leaderboard is set to be protected only allowed person can create entries",
     },
     {
-      name: "/myleaderboards",
-      value: "Send's you a DM with all leaderboards where you are a entry.",
+      name: CommandNames.myLeaderboards,
+      value:
+        "Sends a direct message to your account with all leaderboards your user shows up in",
     },
     {
-      name: "/help",
+      name: CommandNames.help,
       value: "Replies with this message",
     },
   ],
