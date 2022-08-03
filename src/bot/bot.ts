@@ -2,6 +2,7 @@ import {
   CacheType,
   Client,
   CommandInteraction,
+  DMChannel,
   Intents,
   Interaction,
   TextBasedChannel,
@@ -146,4 +147,13 @@ const handlePostAction = (
   } else {
     console.error(`could not execute post action ${action.action}`);
   }
+};
+
+export const getDMChannelToUser = async (
+  userId: string
+): Promise<DMChannel | null> => {
+  const user = await client.users.fetch(userId);
+  if (!user) return null;
+  const channel = await user.createDM(true);
+  return channel || null;
 };

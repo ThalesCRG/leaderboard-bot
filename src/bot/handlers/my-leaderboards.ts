@@ -1,22 +1,26 @@
-import { UserManager } from "discord.js";
 import { getUserLeaderboards } from "../../database/database";
 import { DataHolder, HandlerResponse, PostActionType } from "../../types";
-import { printFilteredLeaderboard } from "../../utils/messageUtils";
-import { client } from "../bot";
+import { getDMChannelToUser } from "../bot";
 import { CommandNames } from "../command-names";
 
 export async function myleaderboardsHandler(
   data: DataHolder,
   userId: string
 ): Promise<HandlerResponse> {
-  const user = await client.users.fetch(userId);
-  const channel = await user.createDM(true);
-  if (!channel) throw new Error("Could not resolve channel");
+  const channel = await getDMChannelToUser(userId);
+
+  if (channel === null) {
+    console.error(`could not oepn a DM channel with user ${userId}`);
+    return {
+      message:
+        "An error occurred: Could not reach you via DM. You may try again...",
+    };
+  }
 
   const leaderboards = await getUserLeaderboards(userId);
 
   return {
-    message: "I send you a DM!",
+    message: "Hang on! I'll send you a DM!",
     postActions: [
       {
         action: PostActionType.printLeaderboardFiltered,
