@@ -34,7 +34,9 @@ export async function initConnection(connectionString: string) {
 
   const uri = connectionString.slice(
     connectionString.indexOf("@") + 1,
-    connectionString.indexOf("?")
+    connectionString.indexOf("?") >= 0
+      ? connectionString.indexOf("?")
+      : undefined
   );
   console.log(`trying to connect to db ${uri}`);
 
@@ -44,6 +46,8 @@ export async function initConnection(connectionString: string) {
     console.error(`initial connection to db failed`, error);
     throw "database connection failed";
   }
+
+  console.log("database connection succesful");
 
   connection.once("open", () => {
     console.log("successfully connected to database");

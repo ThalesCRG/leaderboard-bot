@@ -36,7 +36,7 @@ export const client = new Client({
 export async function initConnection(token: string, appId: string) {
   console.log("trying bot login...");
   await client.login(token);
-  console.log("Bot login successful");
+  console.log("bot login successful");
 
   const rest = new REST({ version: "9" }).setToken(token);
 
