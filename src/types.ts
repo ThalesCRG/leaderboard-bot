@@ -43,6 +43,7 @@ export type HandlerResponse = {
 
 export enum PostActionType {
   printLeaderboardFiltered,
+  printLeaderboard,
 }
 
 export type PostAction = {

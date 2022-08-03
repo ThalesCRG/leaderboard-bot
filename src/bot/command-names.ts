@@ -3,4 +3,5 @@ export enum CommandNames {
   createEntry = "createentry",
   setProtected = "setprotected",
   addAllowence = "addallowence",
+  cloneLeaderboard = "cloneleaderboard",
 }

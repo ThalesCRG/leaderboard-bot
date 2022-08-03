@@ -21,24 +21,7 @@
       }
     ]
   },
-  {
-    "name": "cloneleaderboard",
-    "description": "Creates a Leaderboardmessage for your Channel",
-    "options": [
-      {
-        "name": "leaderboardid",
-        "description": "The ID of the leaderboard that shall be cloned",
-        "required": true,
-        "type": 3
-      },
-      {
-        "name": "allentries",
-        "description": "Do you want to see all entries instead of the best per Driver?",
-        "required": false,
-        "type": 5
-      }
-    ]
-  },
+
   {
     "name": "deleteleaderboard",
     "description": "Deletes a Leaderboard",

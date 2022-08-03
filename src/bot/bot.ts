@@ -19,7 +19,10 @@ import {
   PostAction,
   PostActionType,
 } from "../types";
-import { printFilteredLeaderboard } from "../utils/messageUtils";
+import {
+  printFilteredLeaderboard,
+  printLeaderboard,
+} from "../utils/messageUtils";
 
 const client = new Client({
   intents: [
@@ -139,6 +142,8 @@ const handlePostAction = (
       action.data,
       interaction.channel as TextBasedChannel
     );
+  } else if (action.action === PostActionType.printLeaderboard) {
+    printLeaderboard(action.data, interaction.channel as TextBasedChannel);
   } else {
     console.error(`could not execute post action ${action.action}`);
   }
