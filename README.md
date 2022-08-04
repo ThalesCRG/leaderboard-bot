@@ -2,7 +2,7 @@
 
 Discord bot to manage and publish leaderboards for sim-racing challenges
 
-> TODO: add image of leaderboard response here
+![sample bot answer](https://i.imgur.com/soq1C5y.png)
 
 ## setup
 
