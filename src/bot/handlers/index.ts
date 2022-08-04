@@ -27,6 +27,10 @@ import {
   myleaderboardsHandler,
 } from "./my-leaderboards";
 import { helpCommand, helpHandler } from "./help";
+import {
+  setDescriptionCommand,
+  setDescriptionHandler,
+} from "./set-description";
 
 export const commands: Array<Command> = [
   createLeaderboardCommand,
@@ -39,6 +43,7 @@ export const commands: Array<Command> = [
   allLeaderboardsCommand,
   myLeaderboardsCommand,
   helpCommand,
+  setDescriptionCommand,
 ];
 
 /**
@@ -55,6 +60,7 @@ const handlers: { [key: string]: any } = {
   [allLeaderboardsCommand.name]: allLeaderboardsHandler,
   [myLeaderboardsCommand.name]: myleaderboardsHandler,
   [helpCommand.name]: helpHandler,
+  [setDescriptionCommand.name]: setDescriptionHandler,
 };
 
 export default handlers;

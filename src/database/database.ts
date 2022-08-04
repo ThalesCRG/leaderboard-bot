@@ -4,6 +4,7 @@ import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
 import { DeleteLeaderboard } from "../bot/handlers/delete-leaderboard";
 import { RemoveAllowence } from "../bot/handlers/remove-allowence";
+import { SetDescription } from "../bot/handlers/set-description";
 import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
 import { IEntryEntity, ILeaderboardEntity } from "./database-types";
@@ -286,4 +287,28 @@ export async function getUserLeaderboards(
 ): Promise<Array<ILeaderboardEntity>> {
   const leaderboards = await Leaderboard.find({ "entries.userId": userId });
   return leaderboards;
+}
+
+export async function setLeaderboardDescription(
+  model: SetDescription,
+  executor: string
+): Promise<ILeaderboardEntity> {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
+  if (!leaderboard)
+    throw new Error(
+      `Leaderboard with \`id\` ${model.leaderboardId} does not exist`
+    );
+
+  if (leaderboard.creatorId !== executor)
+    throw new Error(
+      `Only the creator of the leaderboard may update the description.`
+    );
+
+  leaderboard.description = model.description;
+  try {
+    leaderboard.save();
+  } catch (error) {
+    console.log(error);
+  }
+  return leaderboard;
 }

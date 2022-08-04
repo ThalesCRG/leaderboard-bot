@@ -1,3 +1,4 @@
+import { CommandInteraction } from "discord.js";
 import * as database from "../../database/database";
 import {
   Command,
@@ -5,6 +6,7 @@ import {
   DiscordDataTypes,
   HandlerResponse,
 } from "../../types";
+import { MAX_DESCRIPTION_LENGTH } from "../../utils/messageUtils";
 import { CommandNames } from "../command-names";
 
 export class CreateLeaderboard {
@@ -21,7 +23,11 @@ export class CreateLeaderboard {
       data.getBoolean(CreateLeaderboardOption.protected) || false;
   }
   get isValid() {
-    return this.name?.length > 0 && this.description?.length > 0;
+    return (
+      this.name?.length > 0 &&
+      this.description.length > 0 &&
+      this.description.length < MAX_DESCRIPTION_LENGTH
+    );
   }
 }
 
