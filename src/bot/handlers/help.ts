@@ -6,7 +6,7 @@ export function helpHandler(): HandlerResponse {
   return {
     message: {
       content: "We're glad to help:",
-      embeds: [messegeEmbed],
+      embeds: [messageEmbed],
     },
   };
 }
