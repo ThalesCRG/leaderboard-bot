@@ -11,10 +11,9 @@ export async function myleaderboardsHandler(
 
   if (channel === null) {
     console.error(`could not oepn a DM channel with user ${userId}`);
-    return {
-      message:
-        "An error occurred: Could not reach you via DM. You may try again...",
-    };
+    throw new Error(
+      "An error occurred: Could not reach you via DM. You may try again..."
+    );
   }
 
   const leaderboards = await getUserLeaderboards(userId);
