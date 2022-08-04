@@ -9,6 +9,7 @@ import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 import { BaseModel } from "./base-model";
+import { ValidationError } from "./validation-error";
 
 export class RemoveAllowence extends BaseModel {
   leaderboardId: string;
@@ -39,11 +40,7 @@ export async function removeAllowenceHandler(
 
   if (!model.isValid) {
     console.error("remove allowence model is not valid", JSON.stringify(model));
-
-    const errorMesssage = model.errors
-      .flatMap((error) => ErorMessages[error])
-      .join("\n");
-    throw new Error(errorMesssage);
+    throw new ValidationError(model.errors);
   }
 
   const result = await removeAllowence(model, executorId);

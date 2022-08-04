@@ -9,6 +9,7 @@ import { CommandNames } from "../command-names";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { BaseModel } from "./base-model";
+import { ValidationError } from "./validation-error";
 
 export class SetProtected extends BaseModel {
   leaderboardId: string;
@@ -35,13 +36,11 @@ export async function setProtectedHandler(
   const model = new SetProtected(data);
   if (!model.isValid) {
     console.error("set protected model not valid", JSON.stringify(model));
-    const errorMesssage = model.errors
-      .flatMap((error) => ErorMessages[error])
-      .join("\n");
-    throw new Error(errorMesssage);
+    throw new ValidationError(model.errors);
   }
 
   await setProtected(model, user);
+
   return {
     message: `Leaderboard ${model.leaderboardId} is now ${
       model.protectedFlag ? "protected" : "not protected"
