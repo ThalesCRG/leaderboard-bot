@@ -9,12 +9,14 @@ import { LEADERBOARD_NAME_MAX_LENGTH } from "../../utils/LeaderboardUtils";
 import { MAX_DESCRIPTION_LENGTH } from "../../utils/messageUtils";
 import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
+import { BaseModel } from "./base-model";
 
-export class CreateLeaderboard {
+export class CreateLeaderboard extends BaseModel {
   name: string;
   description: string;
   protected: boolean;
   constructor(data: DataHolder) {
+    super();
     this.name = data.getString(CreateLeaderboardOption.name, true);
     this.description = data.getString(
       CreateLeaderboardOption.description,
@@ -24,25 +26,19 @@ export class CreateLeaderboard {
       data.getBoolean(CreateLeaderboardOption.protected) || false;
   }
 
-  get isValid() {
-    return this.errors.length === 0;
-  }
+  validate() {
+    this.check(
+      () =>
+        this.name.length > 0 && this.name.length < LEADERBOARD_NAME_MAX_LENGTH,
+      UserInputErrors.LeaderboardTitleError
+    );
 
-  get errors() {
-    let errors: UserInputErrors[] = [];
-    if (
-      this.name.length <= 0 ||
-      this.name.length > LEADERBOARD_NAME_MAX_LENGTH
-    ) {
-      errors.push(UserInputErrors.LeaderboardTitleError);
-    }
-    if (
-      this.description.length <= 0 ||
-      this.description.length > MAX_DESCRIPTION_LENGTH
-    ) {
-      errors.push(UserInputErrors.DescriptionError);
-    }
-    return errors;
+    this.check(
+      () =>
+        this.description.length > 0 &&
+        this.description.length < MAX_DESCRIPTION_LENGTH,
+      UserInputErrors.DescriptionError
+    );
   }
 }
 
@@ -53,6 +49,7 @@ export const createLeaderboardHandler = async (
 ): Promise<HandlerResponse> => {
   const model = new CreateLeaderboard(data);
 
+  console.log("valid", model.isValid);
   if (!model.isValid) {
     console.error(
       "create leaderboard model is not valid",

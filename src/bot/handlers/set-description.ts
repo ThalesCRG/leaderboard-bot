@@ -9,12 +9,14 @@ import { CommandNames } from "../command-names";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { MAX_DESCRIPTION_LENGTH } from "../../utils/messageUtils";
 import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
+import { BaseModel } from "./base-model";
 
-export class SetDescription {
+export class SetDescription extends BaseModel {
   leaderboardId: string;
   description: string;
 
-  constructor(data: DataHolder, user: string) {
+  constructor(data: DataHolder) {
+    super();
     this.leaderboardId = data.getString(
       SetDescriptionOption.leaderboardId,
       true
@@ -22,22 +24,17 @@ export class SetDescription {
     this.description = data.getString(SetDescriptionOption.description, true);
   }
 
-  get isValid() {
-    return this.errors.length === 0;
-  }
-
-  get errors() {
-    let errors: UserInputErrors[] = [];
-    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
-      errors.push(UserInputErrors.LeaderboardIdError);
-    }
-    if (
-      this.description.length <= 0 ||
-      this.description.length > MAX_DESCRIPTION_LENGTH
-    ) {
-      errors.push(UserInputErrors.DescriptionError);
-    }
-    return errors;
+  validate() {
+    this.check(
+      () => this.leaderboardId.match(LEADERBOARDID_REGEX),
+      UserInputErrors.LeaderboardIdError
+    );
+    this.check(
+      () =>
+        this.description.length > 0 &&
+        this.description.length < MAX_DESCRIPTION_LENGTH,
+      UserInputErrors.DescriptionError
+    );
   }
 }
 
@@ -45,7 +42,7 @@ export async function setDescriptionHandler(
   data: DataHolder,
   user: string
 ): Promise<HandlerResponse> {
-  const model = new SetDescription(data, user);
+  const model = new SetDescription(data);
   if (!model.isValid) {
     console.error("set desription model not valid", JSON.stringify(model));
     const errorMesssage = model.errors

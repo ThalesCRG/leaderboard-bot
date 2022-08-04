@@ -9,34 +9,31 @@ import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { TIME_REGEX } from "../../utils/time-utils";
 import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
+import { BaseModel } from "./base-model";
 
-export class CreateEntry {
+export class CreateEntry extends BaseModel {
   leaderboardId: string;
   time: string;
   driver: string;
   notes: string | null;
   constructor(data: DataHolder, user: string) {
+    super();
     this.leaderboardId = data.getString(CreateEntryOption.leaderboardId, true);
     this.time = data.getString(CreateEntryOption.time, true);
     this.driver = data.getUser(CreateEntryOption.driver)?.id ?? user;
     this.notes = data.getString(CreateEntryOption.notes);
   }
-  get isValid() {
-    return this.errors.length === 0;
-  }
 
-  get errors() {
-    let errors: UserInputErrors[] = [];
-    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
-      errors.push(UserInputErrors.LeaderboardIdError);
-    }
-    if (!this.time.match(TIME_REGEX)) {
-      errors.push(UserInputErrors.TimeParseError);
-    }
-    if (!this.driver.length) {
-      errors.push(UserInputErrors.UserError);
-    }
-    return errors;
+  validate() {
+    this.check(
+      () => this.leaderboardId.match(LEADERBOARDID_REGEX),
+      UserInputErrors.LeaderboardIdError
+    );
+    this.check(
+      () => this.time.match(TIME_REGEX),
+      UserInputErrors.TimeParseError
+    );
+    this.check(() => this.driver.length, UserInputErrors.UserError);
   }
 }
 

@@ -8,33 +8,25 @@ import {
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
+import { BaseModel } from "./base-model";
 
-export class AddAllowence {
+export class AddAllowence extends BaseModel {
   leaderboardId: string;
   userId: string;
   executorId: string;
   constructor(data: DataHolder, executorId: string) {
+    super();
     this.leaderboardId = data.getString(AddAllowenceOption.leaderboardId, true);
     this.userId = data.getUser(AddAllowenceOption.user, true).id;
     this.executorId = executorId;
   }
 
-  get isValid() {
-    return (
-      this.leaderboardId.match(LEADERBOARDID_REGEX) && this.userId.length > 0
+  validate(): void {
+    this.check(
+      () => this.leaderboardId.match(LEADERBOARDID_REGEX),
+      UserInputErrors.LeaderboardIdError
     );
-  }
-
-  get errors() {
-    let errors: UserInputErrors[] = [];
-    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
-      errors.push(UserInputErrors.LeaderboardIdError);
-    }
-    if (this.userId.length <= 0) {
-      errors.push(UserInputErrors.UserError);
-    }
-
-    return errors;
+    this.check(() => this.userId.length > 0, UserInputErrors.UserError);
   }
 }
 

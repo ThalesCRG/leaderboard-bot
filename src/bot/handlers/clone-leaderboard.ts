@@ -9,11 +9,13 @@ import {
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
+import { BaseModel } from "./base-model";
 
-export class CloneLeaderboard {
+export class CloneLeaderboard extends BaseModel {
   leaderboardId: string;
   allentries: boolean;
   constructor(data: DataHolder) {
+    super();
     this.leaderboardId = data.getString(
       cloneLeaderboardOption.leaderboardId,
       true
@@ -22,16 +24,11 @@ export class CloneLeaderboard {
       data.getBoolean(cloneLeaderboardOption.allentries) || false;
   }
 
-  get isValid() {
-    return this.errors.length === 0;
-  }
-
-  get errors() {
-    let errors: UserInputErrors[] = [];
-    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
-      errors.push(UserInputErrors.LeaderboardIdError);
-    }
-    return errors;
+  validate(): void {
+    this.check(
+      () => this.leaderboardId.match(LEADERBOARDID_REGEX),
+      UserInputErrors.LeaderboardIdError
+    );
   }
 }
 
