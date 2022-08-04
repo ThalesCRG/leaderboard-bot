@@ -21,6 +21,7 @@ import {
 import {
   printFilteredLeaderboard,
   printLeaderboard,
+  printMultipleFilteredLeaderboards,
   printMultipleLeaderboards,
 } from "../utils/messageUtils";
 
@@ -28,7 +29,6 @@ export const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILD_MEMBERS,
     Intents.FLAGS.DIRECT_MESSAGES,
   ],
 });
@@ -131,6 +131,11 @@ const handlePostAction = (
     action.data.leaderboards
   ) {
     printMultipleLeaderboards(action.data.leaderboards, channel);
+  } else if (
+    action.action === PostActionType.printMultipleFilteredLeaderboards &&
+    action.data.leaderboards
+  ) {
+    printMultipleFilteredLeaderboards(action.data.leaderboards, channel);
   } else {
     console.error(
       `could not execute post action ${action.action}. action name not found or data not correct`

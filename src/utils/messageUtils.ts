@@ -33,6 +33,15 @@ export async function printMultipleLeaderboards(
   }
 }
 
+export async function printMultipleFilteredLeaderboards(
+  leaderboards: ILeaderboardEntity[],
+  channel: TextBasedChannel
+) {
+  for (const leaderboard of leaderboards) {
+    printFilteredLeaderboard(leaderboard, channel);
+  }
+}
+
 export function printFilteredLeaderboard(
   leaderboard: ILeaderboardEntity,
   channel: TextBasedChannel
