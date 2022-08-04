@@ -18,7 +18,7 @@ DB_URI=
 ```
 
 The `DB_URI` needs to be a mongoDB Connection String URI.
-`BOT_TOKEN` and `APPLICATION_ID` can be aquired on the ![Discord Developer Portal](https://discord.com/developers/applications)
+`BOT_TOKEN` and `APPLICATION_ID` can be aquired on the [Discord Developer Portal](https://discord.com/developers/applications)
 
 ## run
 
