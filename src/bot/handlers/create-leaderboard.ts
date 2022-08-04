@@ -6,7 +6,9 @@ import {
   DiscordDataTypes,
   HandlerResponse,
 } from "../../types";
+import { LEADERBOARD_NAME_MAX_LENGTH } from "../../utils/LeaderboardUtils";
 import { MAX_DESCRIPTION_LENGTH } from "../../utils/messageUtils";
+import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 
 export class CreateLeaderboard {
@@ -22,12 +24,26 @@ export class CreateLeaderboard {
     this.protected =
       data.getBoolean(CreateLeaderboardOption.protected) || false;
   }
+
   get isValid() {
-    return (
-      this.name?.length > 0 &&
-      this.description.length > 0 &&
-      this.description.length < MAX_DESCRIPTION_LENGTH
-    );
+    return this.errors.length === 0;
+  }
+
+  get errors() {
+    let errors: UserInputErrors[] = [];
+    if (
+      this.name.length <= 0 ||
+      this.name.length > LEADERBOARD_NAME_MAX_LENGTH
+    ) {
+      errors.push(UserInputErrors.LeaderboardTitleError);
+    }
+    if (
+      this.description.length <= 0 ||
+      this.description.length > MAX_DESCRIPTION_LENGTH
+    ) {
+      errors.push(UserInputErrors.DescriptionError);
+    }
+    return errors;
   }
 }
 
@@ -43,7 +59,11 @@ export const createLeaderboardHandler = async (
       "create leaderboard model is not valid",
       JSON.stringify(model)
     );
-    throw new Error("create leaderboard model is not valid");
+
+    const errorMesssage = model.errors
+      .flatMap((error) => ErorMessages[error])
+      .join("\n");
+    throw new Error(errorMesssage);
   }
 
   const id = await database.saveLeaderboard(model, user, guild);

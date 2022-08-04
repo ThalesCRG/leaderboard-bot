@@ -7,6 +7,7 @@ import {
 import { setProtected } from "../../database/database";
 import { CommandNames } from "../command-names";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
+import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 
 export class SetProtected {
   leaderboardId: string;
@@ -18,7 +19,15 @@ export class SetProtected {
   }
 
   get isValid() {
-    return this.leaderboardId.match(LEADERBOARDID_REGEX);
+    return this.errors.length === 0;
+  }
+
+  get errors() {
+    let errors: UserInputErrors[] = [];
+    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
+      errors.push(UserInputErrors.LeaderboardIdError);
+    }
+    return errors;
   }
 }
 
@@ -29,7 +38,10 @@ export async function setProtectedHandler(
   const model = new SetProtected(data, user);
   if (!model.isValid) {
     console.error("set protected model not valid", JSON.stringify(model));
-    throw new Error("set protected model not valid");
+    const errorMesssage = model.errors
+      .flatMap((error) => ErorMessages[error])
+      .join("\n");
+    throw new Error(errorMesssage);
   }
 
   await setProtected(model, user);

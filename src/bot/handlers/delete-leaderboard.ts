@@ -7,6 +7,7 @@ import {
   HandlerResponse,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
+import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 
 export class DeleteLeaderboard {
@@ -18,7 +19,15 @@ export class DeleteLeaderboard {
     );
   }
   get isValid() {
-    return this.leaderboardId.match(LEADERBOARDID_REGEX);
+    return this.errors.length === 0;
+  }
+
+  get errors() {
+    let errors: UserInputErrors[] = [];
+    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
+      errors.push(UserInputErrors.LeaderboardIdError);
+    }
+    return errors;
   }
 }
 
@@ -29,7 +38,15 @@ export async function deleteLeaderboardHandler(
   const model = new DeleteLeaderboard(data);
 
   if (!model.isValid) {
-    throw new Error("Leaderboard Id is not a valid Id");
+    console.error(
+      "delete leaderboard model is not valid",
+      JSON.stringify(model)
+    );
+
+    const errorMesssage = model.errors
+      .flatMap((error) => ErorMessages[error])
+      .join("\n");
+    throw new Error(errorMesssage);
   }
 
   const result = await deleteLeaderboard(model, executorId);

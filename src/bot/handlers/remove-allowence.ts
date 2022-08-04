@@ -6,6 +6,7 @@ import {
   HandlerResponse,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
+import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 
 export class RemoveAllowence {
@@ -19,9 +20,18 @@ export class RemoveAllowence {
     this.userId = data.getUser(RemoveAllowanceOption.user, true).id;
   }
   get isValid() {
-    return (
-      this.leaderboardId.match(LEADERBOARDID_REGEX) && this.userId.length > 0
-    );
+    return this.userId.length > 0;
+  }
+
+  get errors() {
+    let errors: UserInputErrors[] = [];
+    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
+      errors.push(UserInputErrors.LeaderboardIdError);
+    }
+    if (this.userId.length <= 0) {
+      errors.push(UserInputErrors.UserError);
+    }
+    return errors;
   }
 }
 
@@ -31,10 +41,14 @@ export async function removeAllowenceHandler(
 ): Promise<HandlerResponse> {
   const model = new RemoveAllowence(data);
 
-  if (!model.isValid)
-    throw new Error(
-      "Invalid Parameters. Please check the the Leaderboard ID and/or the user."
-    );
+  if (!model.isValid) {
+    console.error("remove allowence model is not valid", JSON.stringify(model));
+
+    const errorMesssage = model.errors
+      .flatMap((error) => ErorMessages[error])
+      .join("\n");
+    throw new Error(errorMesssage);
+  }
 
   const result = await removeAllowence(model, executorId);
   return {

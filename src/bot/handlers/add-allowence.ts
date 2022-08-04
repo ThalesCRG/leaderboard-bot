@@ -7,6 +7,7 @@ import {
   HandlerResponse,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
+import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 
 export class AddAllowence {
@@ -24,6 +25,18 @@ export class AddAllowence {
       this.leaderboardId.match(LEADERBOARDID_REGEX) && this.userId.length > 0
     );
   }
+
+  get errors() {
+    let errors: UserInputErrors[] = [];
+    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
+      errors.push(UserInputErrors.LeaderboardIdError);
+    }
+    if (this.userId.length <= 0) {
+      errors.push(UserInputErrors.UserError);
+    }
+
+    return errors;
+  }
 }
 
 export const addallowenceHandler = async (
@@ -34,7 +47,10 @@ export const addallowenceHandler = async (
 
   if (!model.isValid) {
     console.error("Add allowance model is not valid", JSON.stringify(model));
-    throw new Error("Add allowance model is not valid");
+    const errorMesssage = model.errors
+      .flatMap((error) => ErorMessages[error])
+      .join("\n");
+    throw new Error(errorMesssage);
   }
 
   const newAllowence = await addAllowence(model, user);

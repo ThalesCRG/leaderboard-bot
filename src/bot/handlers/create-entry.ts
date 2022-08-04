@@ -7,6 +7,7 @@ import {
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { TIME_REGEX } from "../../utils/time-utils";
+import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 
 export class CreateEntry {
@@ -21,11 +22,21 @@ export class CreateEntry {
     this.notes = data.getString(CreateEntryOption.notes);
   }
   get isValid() {
-    return (
-      this.leaderboardId.match(LEADERBOARDID_REGEX) &&
-      TIME_REGEX.test(this.time) &&
-      this.driver?.length
-    );
+    return this.errors.length === 0;
+  }
+
+  get errors() {
+    let errors: UserInputErrors[] = [];
+    if (!this.leaderboardId.match(LEADERBOARDID_REGEX)) {
+      errors.push(UserInputErrors.LeaderboardIdError);
+    }
+    if (!this.time.match(TIME_REGEX)) {
+      errors.push(UserInputErrors.TimeParseError);
+    }
+    if (!this.driver.length) {
+      errors.push(UserInputErrors.UserError);
+    }
+    return errors;
   }
 }
 
@@ -37,7 +48,10 @@ export const createEntryHandler = async (
 
   if (!model.isValid) {
     console.error("create entry model is not valid", JSON.stringify(model));
-    throw new Error("create entry model is not valid");
+    const errorMesssage = model.errors
+      .flatMap((error) => ErorMessages[error])
+      .join("\n");
+    throw new Error(errorMesssage);
   }
 
   const [id, leaderboard] = await addEntry(model, user);
