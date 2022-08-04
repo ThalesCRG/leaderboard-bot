@@ -1,4 +1,3 @@
-import { CommandInteraction } from "discord.js";
 import * as database from "../../database/database";
 import {
   Command,

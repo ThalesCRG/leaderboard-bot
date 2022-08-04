@@ -1,4 +1,3 @@
-import { CommandInteraction, Interaction } from "discord.js";
 import { deleteLeaderboard } from "../../database/database";
 import {
   Command,

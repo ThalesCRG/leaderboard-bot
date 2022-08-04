@@ -1,4 +1,3 @@
-import { CommandInteraction, Interaction } from "discord.js";
 import { addAllowence } from "../../database/database";
 import {
   Command,
