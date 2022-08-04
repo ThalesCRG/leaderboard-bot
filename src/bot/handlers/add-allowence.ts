@@ -6,7 +6,7 @@ import {
   HandlerResponse,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
-import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";
@@ -46,7 +46,7 @@ export const addallowenceHandler = async (
 
   if (newAllowence) {
     return {
-      message: `Added <@${newAllowence?.userId}> to Leaderboard ${newAllowence?.leaderboardId}`,
+      message: `Added <@${newAllowence?.userId}> to Leaderboard \`${newAllowence?.leaderboardId}\``,
     };
   } else {
     return {

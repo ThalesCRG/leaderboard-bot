@@ -7,7 +7,7 @@ import {
   PostActionType,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
-import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";

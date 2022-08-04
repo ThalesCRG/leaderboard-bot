@@ -6,7 +6,7 @@ import {
   HandlerResponse,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
-import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";
@@ -45,7 +45,7 @@ export async function removeAllowenceHandler(
 
   const result = await removeAllowence(model, executorId);
   return {
-    message: `Removed <@${result.userId}> from Leaderboard ${result.leaderboardId}`,
+    message: `Removed <@${result.userId}> from Leaderboard \`${result.leaderboardId}\``,
   };
 }
 

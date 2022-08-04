@@ -7,7 +7,7 @@ import {
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
 import { TIME_REGEX } from "../../utils/time-utils";
-import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";
@@ -59,7 +59,7 @@ export const createEntryHandler = async (
   ];
 
   return {
-    message: `Added entry ${id} for <@${model.driver}> to leaderboard: ${leaderboard.name}`,
+    message: `Added entry for <@${model.driver}> to leaderboard: ${leaderboard.name}`,
     postActions,
   };
 };

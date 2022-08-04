@@ -7,7 +7,7 @@ import {
 } from "../../types";
 import { LEADERBOARD_NAME_MAX_LENGTH } from "../../utils/LeaderboardUtils";
 import { MAX_DESCRIPTION_LENGTH } from "../../utils/messageUtils";
-import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";
@@ -61,7 +61,7 @@ export const createLeaderboardHandler = async (
 
   const id = await database.saveLeaderboard(model, user, guild);
 
-  return { message: `Leaderboard with ${id} created.` };
+  return { message: `Leaderboard with ID: \`${id}\` created.` };
 };
 
 enum CreateLeaderboardOption {

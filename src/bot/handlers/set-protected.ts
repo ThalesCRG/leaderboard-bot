@@ -7,7 +7,7 @@ import {
 import { setProtected } from "../../database/database";
 import { CommandNames } from "../command-names";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
-import { ErorMessages, UserInputErrors } from "../../utils/UserInputUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";
 
