@@ -3,7 +3,6 @@ import {
   Client,
   CommandInteraction,
   DMChannel,
-  Intents,
   Interaction,
   TextBasedChannel,
 } from "discord.js";
@@ -26,11 +25,7 @@ import {
 } from "../utils/messageUtils";
 
 export const client = new Client({
-  intents: [
-    Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.DIRECT_MESSAGES,
-  ],
+  intents: ["Guilds", "GuildMessages", "DirectMessages"],
 });
 
 export async function initConnection(token: string, appId: string) {

@@ -2,8 +2,8 @@ import {
   CacheType,
   CommandInteractionOptionResolver,
   MessagePayload,
+  MessageOptions,
   TextBasedChannel,
-  WebhookEditMessageOptions,
 } from "discord.js";
 import { ILeaderboardEntity } from "./database/database-types";
 
@@ -33,10 +33,7 @@ export type DataHolder = Omit<
   "getMessage" | "getFocused"
 >;
 
-export type HandlerResponseMessage =
-  | string
-  | MessagePayload
-  | WebhookEditMessageOptions;
+export type HandlerResponseMessage = string | MessagePayload | MessageOptions;
 
 export type HandlerResponse = {
   message: HandlerResponseMessage;

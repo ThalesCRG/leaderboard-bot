@@ -1,4 +1,4 @@
-import { MessageEmbedOptions } from "discord.js";
+import { APIEmbed } from "discord.js";
 import { Command, HandlerResponse } from "../../types";
 import { CommandNames } from "../command-names";
 
@@ -16,10 +16,10 @@ export const helpCommand: Command = {
   description: "Prints a help message",
 };
 
-const messegeEmbed: MessageEmbedOptions = {
+const messageEmbed: APIEmbed = {
   title: "RDC Leaderboard Bot - Help Message",
   description: "We're happy to help you! Try those commands:",
-  color: "#fe6f27",
+  color: 0xfe6f27,
   fields: [
     { name: CommandNames.createLeaderboard, value: "Create a new leaderboard" },
     {
