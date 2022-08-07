@@ -50,6 +50,7 @@ export async function setDescriptionHandler(
   }
 
   const result = await setLeaderboardDescription(model, user);
+  if (!result) return { message: "There was an Error in the Database." };
   const shortDescription =
     result.description?.substring(0, 200) +
     (result.description?.length > 200 ? "..." : ""); //replys have a limit of 2000 Characters where embed descriptions have 4096
