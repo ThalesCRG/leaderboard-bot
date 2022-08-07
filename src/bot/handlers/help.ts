@@ -60,6 +60,10 @@ const messegeEmbed: MessageEmbedOptions = {
         "Sends a direct message to your account with all leaderboards your user shows up in",
     },
     {
+      name: CommandNames.setDescription,
+      value: "Changes the description of a Leaderboard",
+    },
+    {
       name: CommandNames.help,
       value: "Replies with this message",
     },

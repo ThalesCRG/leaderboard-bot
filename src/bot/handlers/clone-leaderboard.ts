@@ -1,4 +1,3 @@
-import { CommandInteraction, Interaction } from "discord.js";
 import { getLeaderboard } from "../../database/database";
 import {
   Command,
@@ -8,16 +7,41 @@ import {
   PostActionType,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
+import { BaseModel } from "./base-model";
+import { ValidationError } from "./validation-error";
+
+export class CloneLeaderboard extends BaseModel {
+  leaderboardId: string;
+  allentries: boolean;
+  constructor(data: DataHolder) {
+    super();
+    this.leaderboardId = data.getString(
+      cloneLeaderboardOption.leaderboardId,
+      true
+    );
+    this.allentries =
+      data.getBoolean(cloneLeaderboardOption.allentries) || false;
+  }
+
+  validate(): void {
+    this.check(
+      () => this.leaderboardId.match(LEADERBOARDID_REGEX),
+      UserInputErrors.LeaderboardIdError
+    );
+  }
+}
 
 export async function cloneLeaderboardHandler(
   data: DataHolder
 ): Promise<HandlerResponse> {
   const model = new CloneLeaderboard(data);
 
-  if (!model.isValid)
-    throw new Error("You did not provide a valid leaderboardid.");
-
+  if (!model.isValid) {
+    console.error("clone leaderboar model is not valid", JSON.stringify(model));
+    throw new ValidationError(model.errors);
+  }
   const leaderboard = await getLeaderboard(model.leaderboardId);
 
   const postActions = [
@@ -33,23 +57,6 @@ export async function cloneLeaderboardHandler(
     message: `Here you are!`,
     postActions,
   };
-}
-
-export class CloneLeaderboard {
-  leaderboardId: string;
-  allentries: boolean;
-  constructor(data: DataHolder) {
-    this.leaderboardId = data.getString(
-      cloneLeaderboardOption.leaderboardId,
-      true
-    );
-    this.allentries =
-      data.getBoolean(cloneLeaderboardOption.allentries) || false;
-  }
-
-  get isValid() {
-    return this.leaderboardId.match(LEADERBOARDID_REGEX);
-  }
 }
 
 const cloneLeaderboardOption = {

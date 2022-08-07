@@ -4,9 +4,15 @@ import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
 import { DeleteLeaderboard } from "../bot/handlers/delete-leaderboard";
 import { RemoveAllowence } from "../bot/handlers/remove-allowence";
+import { SetDescription } from "../bot/handlers/set-description";
 import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
-import { IEntryEntity, ILeaderboardEntity } from "./database-types";
+import {
+  Allowence,
+  IEntryEntity,
+  ILeaderboardEntity,
+  ProtectedResponse,
+} from "./database-types";
 
 const entrySchema = new Schema({
   userId: { type: String, required: true },
@@ -197,7 +203,7 @@ export function getAllowedPersons(
 export async function addAllowence(
   model: AddAllowence,
   executorId: string
-): Promise<{ userId: string; leaderboardId: string } | undefined> {
+): Promise<Allowence | undefined> {
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
   if (leaderboard.creatorId !== executorId)
@@ -213,7 +219,7 @@ export async function addAllowence(
   }
   try {
     await leaderboard.save();
-    return { userId: model.userId, leaderboardId: model.leaderboardId };
+    return model;
   } catch (error) {
     console.error(error);
   }
@@ -222,7 +228,7 @@ export async function addAllowence(
 export async function removeAllowence(
   model: RemoveAllowence,
   executorId: string
-): Promise<RemoveAllowence> {
+): Promise<Allowence | undefined> {
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
 
@@ -243,14 +249,19 @@ export async function removeAllowence(
         model.userId
       }> was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
     );
-  await leaderboard.save();
-  return model;
+  try {
+    await leaderboard.save();
+    return model;
+  } catch (error) {
+    console.error(error);
+    return;
+  }
 }
 
 export async function deleteLeaderboard(
   model: DeleteLeaderboard,
   executor: string
-) {
+): Promise<{ leaderboardId: string } | undefined> {
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
 
@@ -267,7 +278,10 @@ export async function deleteLeaderboard(
   }
 }
 
-export async function setProtected(model: SetProtected, executor: string) {
+export async function setProtected(
+  model: SetProtected,
+  executor: string
+): Promise<ProtectedResponse | undefined> {
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard) throw new Error("Leaderboard not found!");
 
@@ -276,6 +290,10 @@ export async function setProtected(model: SetProtected, executor: string) {
   leaderboard.protected = model.protectedFlag;
   try {
     leaderboard.save();
+    return {
+      leaderboardId: leaderboard.id,
+      protectedFlag: leaderboard.protected,
+    };
   } catch (error) {
     console.log(error);
   }
@@ -286,4 +304,28 @@ export async function getUserLeaderboards(
 ): Promise<Array<ILeaderboardEntity>> {
   const leaderboards = await Leaderboard.find({ "entries.userId": userId });
   return leaderboards;
+}
+
+export async function setLeaderboardDescription(
+  model: SetDescription,
+  executor: string
+): Promise<ILeaderboardEntity | undefined> {
+  const leaderboard = await Leaderboard.findById(model.leaderboardId);
+  if (!leaderboard)
+    throw new Error(
+      `Leaderboard with \`id\` ${model.leaderboardId} does not exist`
+    );
+
+  if (leaderboard.creatorId !== executor)
+    throw new Error(
+      `Only the creator of the leaderboard may update the description.`
+    );
+
+  leaderboard.description = model.description;
+  try {
+    leaderboard.save();
+    return leaderboard;
+  } catch (error) {
+    console.log(error);
+  }
 }

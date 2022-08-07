@@ -9,8 +9,18 @@ export interface ILeaderboardEntity extends Document {
   name: string;
   creatorId: string;
   guildId?: string;
-  description?: string;
+  description: string;
   protected?: boolean;
   allowedList?: string[];
   entries: IEntryEntity[];
+}
+
+export interface Allowence {
+  userId: string;
+  leaderboardId: string;
+}
+
+export interface ProtectedResponse {
+  leaderboardId: string;
+  protectedFlag: boolean;
 }

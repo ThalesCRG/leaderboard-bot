@@ -6,6 +6,7 @@ import momentDurationFormatSetup from "moment-duration-format";
 momentDurationFormatSetup(moment);
 
 const MAX_FIELD_LENGTH = 1024;
+export const MAX_DESCRIPTION_LENGTH = 4096;
 
 export async function printLeaderboard(
   leaderboard: ILeaderboardEntity,
@@ -29,6 +30,15 @@ export async function printMultipleLeaderboards(
 ) {
   for (const leaderboard of leaderboards) {
     printLeaderboard(leaderboard, channel);
+  }
+}
+
+export async function printMultipleFilteredLeaderboards(
+  leaderboards: ILeaderboardEntity[],
+  channel: TextBasedChannel
+) {
+  for (const leaderboard of leaderboards) {
+    printFilteredLeaderboard(leaderboard, channel);
   }
 }
 

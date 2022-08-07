@@ -1,4 +1,3 @@
-import { CommandInteraction, Interaction } from "discord.js";
 import { addAllowence } from "../../database/database";
 import {
   Command,
@@ -7,22 +6,28 @@ import {
   HandlerResponse,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
+import { BaseModel } from "./base-model";
+import { ValidationError } from "./validation-error";
 
-export class AddAllowence {
+export class AddAllowence extends BaseModel {
   leaderboardId: string;
   userId: string;
   executorId: string;
   constructor(data: DataHolder, executorId: string) {
+    super();
     this.leaderboardId = data.getString(AddAllowenceOption.leaderboardId, true);
     this.userId = data.getUser(AddAllowenceOption.user, true).id;
     this.executorId = executorId;
   }
 
-  get isValid() {
-    return (
-      this.leaderboardId.match(LEADERBOARDID_REGEX) && this.userId.length > 0
+  validate(): void {
+    this.check(
+      () => this.leaderboardId.match(LEADERBOARDID_REGEX),
+      UserInputErrors.LeaderboardIdError
     );
+    this.check(() => this.userId.length > 0, UserInputErrors.UserError);
   }
 }
 
@@ -34,14 +39,14 @@ export const addallowenceHandler = async (
 
   if (!model.isValid) {
     console.error("Add allowance model is not valid", JSON.stringify(model));
-    throw new Error("Add allowance model is not valid");
+    throw new ValidationError(model.errors);
   }
 
   const newAllowence = await addAllowence(model, user);
 
   if (newAllowence) {
     return {
-      message: `Added <@${newAllowence?.userId}> to Leaderboard ${newAllowence?.leaderboardId}`,
+      message: `Added <@${newAllowence?.userId}> to Leaderboard \`${newAllowence?.leaderboardId}\``,
     };
   } else {
     return {

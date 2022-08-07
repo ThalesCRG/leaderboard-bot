@@ -21,6 +21,7 @@ import {
 import {
   printFilteredLeaderboard,
   printLeaderboard,
+  printMultipleFilteredLeaderboards,
   printMultipleLeaderboards,
 } from "../utils/messageUtils";
 
@@ -28,7 +29,6 @@ export const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILD_MEMBERS,
     Intents.FLAGS.DIRECT_MESSAGES,
   ],
 });
@@ -109,12 +109,16 @@ export async function changeReply(
   }
 }
 
-const handlePostAction = (
+const handlePostAction = async (
   action: PostAction,
   interaction: Interaction<CacheType>
 ) => {
   const channel =
-    action.data.channel ?? (interaction.channel as TextBasedChannel);
+    action.data.channel ?? (await fetchChannel(interaction.channelId));
+  if (!channel)
+    return console.error(
+      `could not execute post action. Channel could not be resolved.`
+    );
 
   if (
     action.action === PostActionType.printLeaderboardFiltered &&
@@ -131,6 +135,11 @@ const handlePostAction = (
     action.data.leaderboards
   ) {
     printMultipleLeaderboards(action.data.leaderboards, channel);
+  } else if (
+    action.action === PostActionType.printMultipleFilteredLeaderboards &&
+    action.data.leaderboards
+  ) {
+    printMultipleFilteredLeaderboards(action.data.leaderboards, channel);
   } else {
     console.error(
       `could not execute post action ${action.action}. action name not found or data not correct`
@@ -141,11 +150,20 @@ const handlePostAction = (
 export const getDMChannelToUser = async (
   userId: string
 ): Promise<DMChannel | null> => {
-  const user = await client.users.fetch(userId);
+  const user = await client.users.fetch(userId, { force: true });
   if (!user) return null;
   const channel = await user.createDM(true);
   return channel || null;
 };
+
+async function fetchChannel(
+  channelId: string | null
+): Promise<TextBasedChannel | null> {
+  if (!channelId) return null;
+  return (await client.channels.fetch(channelId, {
+    force: true,
+  })) as TextBasedChannel;
+}
 
 const compareCommandLists = (local: Command[], remote: Command[]): boolean => {
   if (local.length !== remote.length) {

@@ -47,6 +47,7 @@ export enum PostActionType {
   printLeaderboard,
   printLeaderboardFiltered,
   printMultipleLeaderboards,
+  printMultipleFilteredLeaderboards,
 }
 
 export type PostAction = {

@@ -9,4 +9,5 @@ export enum CommandNames {
   allLeaderboards = "allleaderboards",
   myLeaderboards = "myleaderboards",
   help = "help",
+  setDescription = "setdescription",
 }

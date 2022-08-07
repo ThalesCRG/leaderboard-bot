@@ -1,4 +1,3 @@
-import { CommandInteraction, Interaction } from "discord.js";
 import { deleteLeaderboard } from "../../database/database";
 import {
   Command,
@@ -7,18 +6,26 @@ import {
   HandlerResponse,
 } from "../../types";
 import { LEADERBOARDID_REGEX } from "../../utils/LeaderboardUtils";
+import { UserInputErrors } from "../../utils/UserInputUtils";
 import { CommandNames } from "../command-names";
+import { BaseModel } from "./base-model";
+import { ValidationError } from "./validation-error";
 
-export class DeleteLeaderboard {
+export class DeleteLeaderboard extends BaseModel {
   leaderboardId: string;
   constructor(data: DataHolder) {
+    super();
     this.leaderboardId = data.getString(
       DeleteLeaderboardOption.leaderboardid,
       true
     );
   }
-  get isValid() {
-    return this.leaderboardId.match(LEADERBOARDID_REGEX);
+
+  validate() {
+    this.check(
+      () => this.leaderboardId.match(LEADERBOARDID_REGEX),
+      UserInputErrors.LeaderboardIdError
+    );
   }
 }
 
@@ -29,7 +36,11 @@ export async function deleteLeaderboardHandler(
   const model = new DeleteLeaderboard(data);
 
   if (!model.isValid) {
-    throw new Error("Leaderboard Id is not a valid Id");
+    console.error(
+      "delete leaderboard model is not valid",
+      JSON.stringify(model)
+    );
+    throw new ValidationError(model.errors);
   }
 
   const result = await deleteLeaderboard(model, executorId);
@@ -37,7 +48,7 @@ export async function deleteLeaderboardHandler(
     throw new Error(
       "Sorry, there was an error in the database. Please try again later."
     );
-  return { message: `Deleted Leaderboard ${result.leaderboardId}` };
+  return { message: `Deleted Leaderboard \`${result.leaderboardId}\`` };
 }
 
 enum DeleteLeaderboardOption {
