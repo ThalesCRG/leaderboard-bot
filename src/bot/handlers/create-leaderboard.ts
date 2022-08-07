@@ -72,7 +72,7 @@ enum CreateLeaderboardOption {
 
 export const createLeaderboardCommand: Command = {
   name: CommandNames.createLeaderboard,
-  description: "Creates a Leaderboard and posts it in your Channel",
+  description: "Creates a Leaderboard.",
   options: [
     {
       name: CreateLeaderboardOption.name,
