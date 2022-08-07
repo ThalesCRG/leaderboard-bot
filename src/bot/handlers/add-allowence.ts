@@ -1,3 +1,4 @@
+import { inlineCode, userMention } from "discord.js";
 import { addAllowence } from "../../database/database";
 import {
   Command,
@@ -46,7 +47,9 @@ export const addallowenceHandler = async (
 
   if (newAllowence) {
     return {
-      message: `Added <@${newAllowence?.userId}> to Leaderboard \`${newAllowence?.leaderboardId}\``,
+      message: `Added ${userMention(
+        newAllowence?.userId
+      )} to Leaderboard ${inlineCode(newAllowence?.leaderboardId)}`,
     };
   } else {
     return {

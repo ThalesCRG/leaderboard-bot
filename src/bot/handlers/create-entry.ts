@@ -1,3 +1,4 @@
+import { userMention } from "discord.js";
 import { addEntry } from "../../database/database";
 import {
   Command,
@@ -59,7 +60,9 @@ export const createEntryHandler = async (
   ];
 
   return {
-    message: `Added entry for <@${model.driver}> to leaderboard: ${leaderboard.name}`,
+    message: `Added entry for ${userMention(model.driver)} to leaderboard: ${
+      leaderboard.name
+    }`,
     postActions,
   };
 };

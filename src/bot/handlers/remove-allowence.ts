@@ -1,3 +1,4 @@
+import { inlineCode, userMention } from "discord.js";
 import { removeAllowence } from "../../database/database";
 import {
   Command,
@@ -46,7 +47,9 @@ export async function removeAllowenceHandler(
   const result = await removeAllowence(model, executorId);
   if (result)
     return {
-      message: `Removed <@${result.userId}> from Leaderboard \`${result.leaderboardId}\``,
+      message: `Removed ${userMention(
+        result.userId
+      )} from Leaderboard ${inlineCode(result.leaderboardId)}`,
     };
   return { message: "There was an error in the Database." };
 }

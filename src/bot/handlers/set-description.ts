@@ -11,6 +11,7 @@ import { MAX_DESCRIPTION_LENGTH } from "../../utils/messageUtils";
 import { UserInputErrors } from "../../utils/UserInputUtils";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";
+import { inlineCode } from "discord.js";
 
 export class SetDescription extends BaseModel {
   leaderboardId: string;
@@ -56,7 +57,7 @@ export async function setDescriptionHandler(
     (result.description?.length > 200 ? "..." : ""); //replys have a limit of 2000 Characters where embed descriptions have 4096
 
   return {
-    message: `Leaderboard ${result.name} has now following description: \`${shortDescription}\``,
+    message: `Leaderboard ${result.name} has now following description: ${inlineCode(shortDescription)}`,
   };
 }
 

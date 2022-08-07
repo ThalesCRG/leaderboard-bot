@@ -1,3 +1,4 @@
+import { inlineCode, SlashCommandBuilder } from "discord.js";
 import * as database from "../../database/database";
 import {
   Command,
@@ -61,7 +62,7 @@ export const createLeaderboardHandler = async (
 
   const id = await database.saveLeaderboard(model, user, guild);
 
-  return { message: `Leaderboard with ID: \`${id}\` created.` };
+  return { message: `Leaderboard with ID: ${inlineCode(id)} created.` };
 };
 
 enum CreateLeaderboardOption {

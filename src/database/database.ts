@@ -1,3 +1,4 @@
+import { inlineCode, userMention } from "discord.js";
 import { connect, connection, model, Schema } from "mongoose";
 import { AddAllowence } from "../bot/handlers/add-allowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
@@ -245,9 +246,9 @@ export async function removeAllowence(
     );
   } else
     throw new Error(
-      `<@${
+      `${userMention(
         model.userId
-      }> was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
+      )}> was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
     );
   try {
     await leaderboard.save();
@@ -313,7 +314,7 @@ export async function setLeaderboardDescription(
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard)
     throw new Error(
-      `Leaderboard with \`id\` ${model.leaderboardId} does not exist`
+      `Leaderboard with id ${inlineCode(model.leaderboardId)} does not exist`
     );
 
   if (leaderboard.creatorId !== executor)

@@ -1,6 +1,6 @@
 import { IEntryEntity, ILeaderboardEntity } from "../database/database-types";
 import { getBestPerPerson } from "../database/database";
-import { TextBasedChannel } from "discord.js";
+import { TextBasedChannel, userMention } from "discord.js";
 var moment = require("moment");
 import momentDurationFormatSetup from "moment-duration-format";
 momentDurationFormatSetup(moment);
@@ -85,7 +85,7 @@ function parseOneEntry(entry: IEntryEntity, position: number): string {
   let result = "";
 
   if (entry) {
-    result = `${position}. ${mentionUser(entry.userId)} ${parseTime(
+    result = `${position}. ${userMention(entry.userId)} ${parseTime(
       entry.time
     )} ${entry.notes ? "  \\|\\|  " + entry.notes : ""}`;
   }
@@ -97,10 +97,6 @@ function parseTime(time: number): string {
   const duration = moment.duration(time);
 
   return duration.format("mm:ss.SSS");
-}
-
-function mentionUser(userId: string): string {
-  return `<@${userId}>`;
 }
 
 function generateEmbeds(
