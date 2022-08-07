@@ -12,13 +12,12 @@ rename `.example.env` to `.env` and provide necessary values or
 create `.env` with
 
 ```
-APPLICATION_ID=
 BOT_TOKEN=
 DB_URI=
 ```
 
 The `DB_URI` needs to be a mongoDB Connection String URI.
-`BOT_TOKEN` and `APPLICATION_ID` can be aquired on the [Discord Developer Portal](https://discord.com/developers/applications)
+`BOT_TOKEN` can be aquired on the [Discord Developer Portal](https://discord.com/developers/applications)
 
 ## run
 

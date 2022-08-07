@@ -1,4 +1,5 @@
 import {
+  ApplicationCommand,
   CacheType,
   Client,
   CommandInteraction,
@@ -6,9 +7,6 @@ import {
   Interaction,
   TextBasedChannel,
 } from "discord.js";
-import { REST } from "@discordjs/rest";
-import { Routes } from "discord-api-types/rest/v10";
-
 import handlers, { commands } from "./handlers";
 import {
   Command,
@@ -28,14 +26,14 @@ export const client = new Client({
   intents: ["Guilds", "GuildMessages", "DirectMessages"],
 });
 
-export async function initConnection(token: string, appId: string) {
+export async function initConnection(token: string) {
   console.log("trying bot login...");
   await client.login(token);
   console.log("bot login successful");
 
-  const rest = new REST({ version: "9" }).setToken(token);
-
-  const remoteCommands = await rest.get(Routes.applicationCommands(appId));
+  const remoteCommands = Array.from(
+    (await client.application?.commands.fetch())?.values() ?? []
+  );
 
   const commandsUpToDate = compareCommandLists(
     commands,
@@ -45,9 +43,15 @@ export async function initConnection(token: string, appId: string) {
   if (commandsUpToDate === false) {
     console.log("Started refreshing application (/) commands.");
 
-    const response = (await rest.put(Routes.applicationCommands(appId), {
-      body: commands,
-    })) as Array<{ id: string; name: string }>;
+    const response: Array<ApplicationCommand> = [];
+
+    for (const command of commands) {
+      const commandResponse = await client.application?.commands.create(
+        command
+      );
+
+      if (commandResponse) response.push(commandResponse);
+    }
 
     const updatedCommands = response.map((cmd) => {
       return { id: cmd.id, name: cmd.name };
@@ -199,8 +203,9 @@ const mapCommandExtended = (c: Command) => {
   return {
     name: c.name,
     description: c.description,
-    options: c.options?.map((o) =>
-      [o.name, o.description, o.type, o.required || false].join(",")
-    ),
+    options:
+      c.options?.map((o) =>
+        [o.name, o.description, o.type, o.required || false].join(",")
+      ) ?? [],
   };
 };
