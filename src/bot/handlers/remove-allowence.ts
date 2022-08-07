@@ -44,9 +44,11 @@ export async function removeAllowenceHandler(
   }
 
   const result = await removeAllowence(model, executorId);
-  return {
-    message: `Removed <@${result.userId}> from Leaderboard \`${result.leaderboardId}\``,
-  };
+  if (result)
+    return {
+      message: `Removed <@${result.userId}> from Leaderboard \`${result.leaderboardId}\``,
+    };
+  return { message: "There was an error in the Database." };
 }
 
 enum RemoveAllowanceOption {

@@ -48,7 +48,7 @@ export async function deleteLeaderboardHandler(
     throw new Error(
       "Sorry, there was an error in the database. Please try again later."
     );
-  return { message: `Deleted Leaderboard ${result.leaderboardId}` };
+  return { message: `Deleted Leaderboard \`${result.leaderboardId}\`` };
 }
 
 enum DeleteLeaderboardOption {
