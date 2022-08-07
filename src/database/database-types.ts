@@ -14,3 +14,13 @@ export interface ILeaderboardEntity extends Document {
   allowedList?: string[];
   entries: IEntryEntity[];
 }
+
+export interface Allowence {
+  userId: string;
+  leaderboardId: string;
+}
+
+export interface ProtectedResponse {
+  leaderboardId: string;
+  protectedFlag: boolean;
+}
