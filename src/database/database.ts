@@ -1,10 +1,8 @@
 import { inlineCode, userMention } from "discord.js";
 import { connect, connection, model, Schema } from "mongoose";
-import { AddAllowence } from "../bot/handlers/add-allowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
 import { DeleteLeaderboard } from "../bot/handlers/delete-leaderboard";
-import { RemoveAllowence } from "../bot/handlers/remove-allowence";
 import { SetDescription } from "../bot/handlers/set-description";
 import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
@@ -202,7 +200,7 @@ export function getAllowedPersons(
 }
 
 export async function addAllowence(
-  model: AddAllowence,
+  model: Allowence,
   executorId: string
 ): Promise<Allowence | undefined> {
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
@@ -227,7 +225,7 @@ export async function addAllowence(
 }
 
 export async function removeAllowence(
-  model: RemoveAllowence,
+  model: Allowence,
   executorId: string
 ): Promise<Allowence | undefined> {
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
@@ -248,7 +246,7 @@ export async function removeAllowence(
     throw new Error(
       `${userMention(
         model.userId
-      )}> was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
+      )} was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
     );
   try {
     await leaderboard.save();

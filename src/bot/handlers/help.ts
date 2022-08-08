@@ -1,6 +1,7 @@
-import { APIEmbed } from "discord.js";
+import { APIEmbed, inlineCode } from "discord.js";
 import { Command, HandlerResponse } from "../../types";
 import { CommandNames } from "../command-names";
+import { AllowenceSubcommand } from "./allowence";
 
 export function helpHandler(): HandlerResponse {
   return {
@@ -36,14 +37,11 @@ const messageEmbed: APIEmbed = {
       value: "Prints all leaderboards that were created on this Discord server",
     },
     {
-      name: CommandNames.addAllowence,
+      name: `${CommandNames.allowence} ${inlineCode(
+        `${AllowenceSubcommand.add} / ${AllowenceSubcommand.remove}`
+      )}`,
       value:
-        "When a Leaderboard is protected, only the creator and allowed person can create entries. With this command you can add somebody to the list of users, who are allowed to post new times",
-    },
-    {
-      name: CommandNames.removeAllowence,
-      value:
-        "Removes somebody from the list of users, who are allowed to post new times",
+        "When a Leaderboard is protected, only the creator and allowed person can create entries. With this command you can add or remove somebody to the list of users, who are allowed to post new times",
     },
     {
       name: CommandNames.deleteLeaderboard,

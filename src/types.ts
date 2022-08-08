@@ -4,8 +4,13 @@ import {
   MessagePayload,
   MessageOptions,
   TextBasedChannel,
+  RESTPostAPIChatInputApplicationCommandsJSONBody,
 } from "discord.js";
 import { ILeaderboardEntity } from "./database/database-types";
+
+export type CommandLike =
+  | Command
+  | RESTPostAPIChatInputApplicationCommandsJSONBody;
 
 export interface Command {
   name: string;

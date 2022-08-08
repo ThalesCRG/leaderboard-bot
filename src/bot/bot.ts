@@ -10,6 +10,7 @@ import {
 import handlers, { commands } from "./handlers";
 import {
   Command,
+  CommandLike,
   HandlerResponse,
   HandlerResponseMessage,
   PostAction,
@@ -176,7 +177,10 @@ async function fetchChannel(
   })) as TextBasedChannel;
 }
 
-const compareCommandLists = (local: Command[], remote: Command[]): boolean => {
+const compareCommandLists = (
+  local: CommandLike[],
+  remote: CommandLike[]
+): boolean => {
   if (local.length !== remote.length) {
     console.log("local and remote commands are not equal by count.");
     return false;
@@ -204,14 +208,14 @@ const compareCommandLists = (local: Command[], remote: Command[]): boolean => {
   return true;
 };
 
-const mapCommandSimple = (commands: Command[]) => {
+const mapCommandSimple = (commands: CommandLike[]) => {
   return commands
     .map((c) => c.name)
     .sort()
     .join(",");
 };
 
-const mapCommandExtended = (c: Command) => {
+const mapCommandExtended = (c: CommandLike) => {
   return {
     name: c.name,
     description: c.description,
