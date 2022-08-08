@@ -44,6 +44,13 @@ export async function initConnection(token: string) {
     console.log("Started refreshing application (/) commands.");
 
     const response: Array<ApplicationCommand> = [];
+    const deleteResponse: Array<ApplicationCommand> = [];
+
+    // Remove old commands from remote
+    for (const command of remoteCommands) {
+      const response = await client.application?.commands.delete(command);
+      if (response) deleteResponse.push(response);
+    }
 
     for (const command of commands) {
       const commandResponse = await client.application?.commands.create(
@@ -52,6 +59,11 @@ export async function initConnection(token: string) {
 
       if (commandResponse) response.push(commandResponse);
     }
+
+    const deletedCommands = deleteResponse.map((cmd) => {
+      return { id: cmd.id, name: cmd.name };
+    });
+    console.log("deleted commands: ", deletedCommands);
 
     const updatedCommands = response.map((cmd) => {
       return { id: cmd.id, name: cmd.name };

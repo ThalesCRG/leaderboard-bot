@@ -89,7 +89,7 @@ export const createLeaderboardCommand: Command = {
     },
     {
       name: CreateLeaderboardOption.protected,
-      description: "Can everybody submit a time?",
+      description: "If a leaderboard is protected, only the creator and members of the allow-list may add entries.",
       type: DiscordDataTypes.BOOLEAN,
       required: false,
     },
