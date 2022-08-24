@@ -10,27 +10,45 @@ import {
   Allowence,
   IEntryEntity,
   ILeaderboardEntity,
+  LeaderboardMessage,
+  ILeaderboardMessages,
   ProtectedResponse,
 } from "./database-types";
 
+const reqString = { type: String, required: true };
 const entrySchema = new Schema({
-  userId: { type: String, required: true },
+  userId: reqString,
   time: { type: Number, required: true },
   notes: String,
 });
 
 const leaderboardSchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  creatorId: { type: String, required: true },
+  name: reqString,
+  description: reqString,
+  creatorId: reqString,
   guildId: String,
   entries: [entrySchema],
   protected: Boolean,
   allowedList: [String],
 });
 
+const leaderboardMessageSchema = new Schema({
+  channelId: reqString,
+  filtered: Boolean,
+  messageId: reqString,
+});
+
+const leaderboardMessagesSchema = new Schema({
+  leaderboardId: reqString,
+  messages: [leaderboardMessageSchema],
+});
+
 const Leaderboard = model<ILeaderboardEntity>("Leaderboard", leaderboardSchema);
 const Entry = model<IEntryEntity>("Entry", entrySchema);
+const LeaderboardMessages = model<ILeaderboardMessages>(
+  "LeaderboardMessages",
+  leaderboardMessagesSchema
+);
 
 export async function initConnection(connectionString: string) {
   if (!connectionString) {
@@ -327,4 +345,53 @@ export async function setLeaderboardDescription(
   } catch (error) {
     console.log(error);
   }
+}
+
+export async function getLeaderboardMessages(
+  leaderboardId: string
+): Promise<ILeaderboardMessages | null> {
+  const leaderboardMesssages = await LeaderboardMessages.findOne({
+    leaderboardId,
+  });
+
+  return leaderboardMesssages;
+}
+
+export async function addLeaderboardMessage(
+  leaderboardId: string,
+  message: { channelId: string; messageId: string; filtered: boolean }
+): Promise<ILeaderboardMessages> {
+  const existingleaderboardMesssages = await LeaderboardMessages.findOne({
+    leaderboardId,
+  });
+
+  if (!existingleaderboardMesssages) {
+    const leaderboardMessages = new LeaderboardMessages();
+    leaderboardMessages.leaderboardId = leaderboardId;
+    leaderboardMessages.messages = [message];
+    await leaderboardMessages.save();
+    return leaderboardMessages;
+  }
+
+  existingleaderboardMesssages.messages.push(message);
+  await existingleaderboardMesssages.save();
+  return existingleaderboardMesssages;
+}
+
+export async function removeMessage(
+  messageId: string,
+  channelId: string,
+  leaderboardId: string
+) {
+  const Leaderboard = await LeaderboardMessages.findOne({ leaderboardId });
+  if (!Leaderboard) return;
+
+  Leaderboard.messages = Leaderboard.messages.filter((entry) => {
+    return entry.channelId !== channelId && entry.messageId !== messageId;
+  });
+
+  console.log(
+    `Deleted Message ${messageId} in Channel ${channelId} from Leaderboard ${leaderboardId}`
+  );
+  await Leaderboard.save();
 }

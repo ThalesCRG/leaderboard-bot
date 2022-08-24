@@ -21,6 +21,7 @@ import {
   printLeaderboard,
   printMultipleFilteredLeaderboards,
   printMultipleLeaderboards,
+  updateLeaderboardMessages,
 } from "../utils/messageUtils";
 
 export const client = new Client({
@@ -152,6 +153,11 @@ const handlePostAction = async (
     action.data.leaderboards
   ) {
     printMultipleFilteredLeaderboards(action.data.leaderboards, channel);
+  } else if (
+    action.action === PostActionType.updateLeaderboards &&
+    action.data.leaderboard
+  ) {
+    updateLeaderboardMessages(action.data.leaderboard);
   } else {
     console.error(
       `could not execute post action ${action.action}. action name not found or data not correct`

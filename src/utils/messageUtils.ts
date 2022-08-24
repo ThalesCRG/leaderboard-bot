@@ -1,8 +1,20 @@
 import { IEntryEntity, ILeaderboardEntity } from "../database/database-types";
-import { getBestPerPerson } from "../database/database";
-import { TextBasedChannel, userMention } from "discord.js";
+import {
+  addLeaderboardMessage,
+  getBestPerPerson,
+  getLeaderboardMessages,
+  removeMessage,
+} from "../database/database";
+import {
+  DiscordAPIError,
+  Message,
+  TextBasedChannel,
+  userMention,
+} from "discord.js";
 var moment = require("moment");
 import momentDurationFormatSetup from "moment-duration-format";
+import { client } from "../bot/bot";
+
 momentDurationFormatSetup(moment);
 
 const MAX_FIELD_LENGTH = 1024;
@@ -18,7 +30,8 @@ export async function printLeaderboard(
   const embeds = generateEmbeds(leaderboard, entries);
 
   try {
-    await channel.send({ embeds: [embeds] });
+    const message = await channel.send({ embeds: [embeds] });
+    addMessage(leaderboard.id, message, false);
   } catch (error) {
     console.log(error);
   }
@@ -42,7 +55,7 @@ export async function printMultipleFilteredLeaderboards(
   }
 }
 
-export function printFilteredLeaderboard(
+export async function printFilteredLeaderboard(
   leaderboard: ILeaderboardEntity,
   channel: TextBasedChannel
 ) {
@@ -51,7 +64,8 @@ export function printFilteredLeaderboard(
 
   const embeds = generateEmbeds(leaderboard, entries);
   try {
-    channel.send({ embeds: [embeds] });
+    const message = await channel.send({ embeds: [embeds] });
+    addMessage(leaderboard.id, message, true);
   } catch (error) {
     console.log(error);
   }
@@ -112,6 +126,7 @@ function generateEmbeds(
     footer: {
       text: `LeaderboardID: ${leaderboard.id}`,
     },
+    timestamp: new Date().toISOString(),
   };
   for (const entries of entriesArray) {
     embeds.fields.push({
@@ -122,4 +137,59 @@ function generateEmbeds(
   }
 
   return embeds;
+}
+
+function addMessage(
+  leaderboardId: string | undefined,
+  message: Message,
+  filtered = true
+) {
+  if (!leaderboardId) return;
+  const messageObject = {
+    messageId: message.id,
+    channelId: message.channel.id,
+    filtered: filtered,
+  };
+  addLeaderboardMessage(leaderboardId, messageObject);
+}
+
+export async function updateLeaderboardMessages(
+  leaderboard: ILeaderboardEntity
+) {
+  if (!leaderboard.id) return;
+  const leaderboardMessages = await getLeaderboardMessages(leaderboard.id);
+  if (!leaderboardMessages) return;
+  for (const message of leaderboardMessages.messages) {
+    try {
+      const channel = await client.channels.fetch(message.channelId);
+      if (!channel) return;
+      const leaderboardMessage = await (
+        channel as TextBasedChannel
+      ).messages.fetch(message.messageId);
+
+      if (!leaderboardMessage) return;
+      await leaderboardMessage.edit({
+        embeds: [
+          generateEmbeds(
+            leaderboard,
+            parseEntries(
+              message.filtered
+                ? getBestPerPerson(leaderboard)
+                : leaderboard.entries
+            )
+          ),
+        ],
+      });
+    } catch (error) {
+      if (error instanceof DiscordAPIError && error.code === 10008) {
+        const urlParts = error.url.split("/");
+        const channel = urlParts[urlParts.indexOf("channels") + 1];
+        const messageId = urlParts[urlParts.indexOf("messages") + 1];
+        removeMessage(messageId, channel, leaderboard.id);
+      } else {
+        console.log(error);
+      }
+    }
+  }
+  console.log(`Updated ${leaderboardMessages.messages.length} messages.`);
 }
