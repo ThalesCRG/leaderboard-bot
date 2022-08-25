@@ -380,11 +380,11 @@ export async function addLeaderboardMessage(
 }
 
 export async function removeMessage(messageId: string, channelId: string) {
-  await LeaderboardMessage.remove({ messageId, channelId });
+  await LeaderboardMessage.deleteMany({ messageId, channelId });
   console.log(`Removed ${messageId} in channel ${channelId}`);
 }
 
 export async function removeLeaderboardMessages(leaderboardId: string) {
-  await LeaderboardMessage.remove({ leaderboardId });
+  await LeaderboardMessage.deleteMany({ leaderboardId });
   console.log(`Removed all messages for ${leaderboardId}`);
 }

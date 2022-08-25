@@ -3,6 +3,7 @@ import {
   DataHolder,
   DiscordDataTypes,
   HandlerResponse,
+  PostActionType,
 } from "../../types";
 import { setLeaderboardDescription } from "../../database/database";
 import { CommandNames } from "../command-names";
@@ -57,7 +58,17 @@ export async function setDescriptionHandler(
     (result.description?.length > 200 ? "..." : ""); //replys have a limit of 2000 Characters where embed descriptions have 4096
 
   return {
-    message: `Leaderboard ${result.name} has now following description: ${inlineCode(shortDescription)}`,
+    message: `Leaderboard ${
+      result.name
+    } has now following description: ${inlineCode(shortDescription)}`,
+    postActions: [
+      {
+        action: PostActionType.updateLeaderboards,
+        data: {
+          leaderboard: result,
+        },
+      },
+    ],
   };
 }
 
