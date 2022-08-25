@@ -3,7 +3,6 @@ import {
   CacheType,
   Client,
   CommandInteraction,
-  DiscordAPIError,
   DMChannel,
   Interaction,
   TextBasedChannel,
