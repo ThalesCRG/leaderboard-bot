@@ -1,4 +1,8 @@
-import { deleteLeaderboard } from "../../database/database";
+import { inlineCode } from "discord.js";
+import {
+  deleteLeaderboard,
+  removeLeaderboardMessages,
+} from "../../database/database";
 import {
   Command,
   DataHolder,
@@ -44,11 +48,14 @@ export async function deleteLeaderboardHandler(
   }
 
   const result = await deleteLeaderboard(model, executorId);
+  await removeLeaderboardMessages(model.leaderboardId);
   if (!result)
     throw new Error(
       "Sorry, there was an error in the database. Please try again later."
     );
-  return { message: `Deleted Leaderboard \`${result.leaderboardId}\`` };
+  return {
+    message: `Deleted Leaderboard ${inlineCode(result.leaderboardId)}`,
+  };
 }
 
 enum DeleteLeaderboardOption {

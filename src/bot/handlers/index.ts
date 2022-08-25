@@ -1,4 +1,4 @@
-import { Command } from "../../types";
+import { CommandLike } from "../../types";
 import {
   createLeaderboardCommand,
   createLeaderboardHandler,
@@ -9,15 +9,10 @@ import {
   deleteLeaderboardHandler,
 } from "./delete-leaderboard";
 import { setProtectedCommand, setProtectedHandler } from "./set-protected";
-import { addallowenceCommand, addallowenceHandler } from "./add-allowence";
 import {
   cloneLeaderboardCommand,
   cloneLeaderboardHandler,
 } from "./clone-leaderboard";
-import {
-  removeAllowenceCommand,
-  removeAllowenceHandler,
-} from "./remove-allowence";
 import {
   allLeaderboardsCommand,
   allLeaderboardsHandler,
@@ -31,19 +26,19 @@ import {
   setDescriptionCommand,
   setDescriptionHandler,
 } from "./set-description";
+import { allowenceCommand, allowenceHandler } from "./allowence";
 
-export const commands: Array<Command> = [
+export const commands: Array<CommandLike> = [
   createLeaderboardCommand,
   createEntryCommand,
   setProtectedCommand,
-  addallowenceCommand,
   cloneLeaderboardCommand,
-  removeAllowenceCommand,
   deleteLeaderboardCommand,
   allLeaderboardsCommand,
   myLeaderboardsCommand,
   helpCommand,
   setDescriptionCommand,
+  allowenceCommand,
 ];
 
 /**
@@ -53,14 +48,13 @@ const handlers: { [key: string]: any } = {
   [createLeaderboardCommand.name]: createLeaderboardHandler,
   [createEntryCommand.name]: createEntryHandler,
   [setProtectedCommand.name]: setProtectedHandler,
-  [addallowenceCommand.name]: addallowenceHandler,
   [cloneLeaderboardCommand.name]: cloneLeaderboardHandler,
-  [removeAllowenceCommand.name]: removeAllowenceHandler,
   [deleteLeaderboardCommand.name]: deleteLeaderboardHandler,
   [allLeaderboardsCommand.name]: allLeaderboardsHandler,
   [myLeaderboardsCommand.name]: myleaderboardsHandler,
   [helpCommand.name]: helpHandler,
   [setDescriptionCommand.name]: setDescriptionHandler,
+  [allowenceCommand.name]: allowenceHandler,
 };
 
 export default handlers;

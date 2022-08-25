@@ -24,3 +24,17 @@ export interface ProtectedResponse {
   leaderboardId: string;
   protectedFlag: boolean;
 }
+
+export interface ILeaderboardMessage extends Document {
+  leaderboardId: string;
+  channelId: string;
+  filtered: boolean;
+  messageId: string;
+}
+
+export type LeaderboardMessageDto = {
+  messageId: string;
+  channelId: string;
+  leaderboardId: string;
+  filtered: boolean;
+};

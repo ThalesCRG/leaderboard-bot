@@ -1,18 +1,16 @@
 import {
+  ApplicationCommand,
   CacheType,
   Client,
   CommandInteraction,
   DMChannel,
-  Intents,
   Interaction,
   TextBasedChannel,
 } from "discord.js";
-import { REST } from "@discordjs/rest";
-import { Routes } from "discord-api-types/rest/v10";
-
 import handlers, { commands } from "./handlers";
 import {
   Command,
+  CommandLike,
   HandlerResponse,
   HandlerResponseMessage,
   PostAction,
@@ -23,24 +21,21 @@ import {
   printLeaderboard,
   printMultipleFilteredLeaderboards,
   printMultipleLeaderboards,
+  updateLeaderboardMessages,
 } from "../utils/messageUtils";
 
 export const client = new Client({
-  intents: [
-    Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.DIRECT_MESSAGES,
-  ],
+  intents: ["Guilds", "GuildMessages", "DirectMessages"],
 });
 
-export async function initConnection(token: string, appId: string) {
+export async function initConnection(token: string) {
   console.log("trying bot login...");
   await client.login(token);
   console.log("bot login successful");
 
-  const rest = new REST({ version: "9" }).setToken(token);
-
-  const remoteCommands = await rest.get(Routes.applicationCommands(appId));
+  const remoteCommands = Array.from(
+    (await client.application?.commands.fetch())?.values() ?? []
+  );
 
   const commandsUpToDate = compareCommandLists(
     commands,
@@ -50,9 +45,27 @@ export async function initConnection(token: string, appId: string) {
   if (commandsUpToDate === false) {
     console.log("Started refreshing application (/) commands.");
 
-    const response = (await rest.put(Routes.applicationCommands(appId), {
-      body: commands,
-    })) as Array<{ id: string; name: string }>;
+    const response: Array<ApplicationCommand> = [];
+    const deleteResponse: Array<ApplicationCommand> = [];
+
+    // Remove old commands from remote
+    for (const command of remoteCommands) {
+      const response = await client.application?.commands.delete(command);
+      if (response) deleteResponse.push(response);
+    }
+
+    for (const command of commands) {
+      const commandResponse = await client.application?.commands.create(
+        command
+      );
+
+      if (commandResponse) response.push(commandResponse);
+    }
+
+    const deletedCommands = deleteResponse.map((cmd) => {
+      return { id: cmd.id, name: cmd.name };
+    });
+    console.log("deleted commands: ", deletedCommands);
 
     const updatedCommands = response.map((cmd) => {
       return { id: cmd.id, name: cmd.name };
@@ -140,6 +153,11 @@ const handlePostAction = async (
     action.data.leaderboards
   ) {
     printMultipleFilteredLeaderboards(action.data.leaderboards, channel);
+  } else if (
+    action.action === PostActionType.updateLeaderboards &&
+    action.data.leaderboard
+  ) {
+    updateLeaderboardMessages(action.data.leaderboard);
   } else {
     console.error(
       `could not execute post action ${action.action}. action name not found or data not correct`
@@ -165,7 +183,17 @@ async function fetchChannel(
   })) as TextBasedChannel;
 }
 
-const compareCommandLists = (local: Command[], remote: Command[]): boolean => {
+export async function fetchMessage(channelId: string, messageId: string) {
+  const channel = await client.channels.fetch(channelId);
+  if (!channel) return;
+  const message = await (channel as TextBasedChannel).messages.fetch(messageId);
+  return message;
+}
+
+const compareCommandLists = (
+  local: CommandLike[],
+  remote: CommandLike[]
+): boolean => {
   if (local.length !== remote.length) {
     console.log("local and remote commands are not equal by count.");
     return false;
@@ -193,19 +221,20 @@ const compareCommandLists = (local: Command[], remote: Command[]): boolean => {
   return true;
 };
 
-const mapCommandSimple = (commands: Command[]) => {
+const mapCommandSimple = (commands: CommandLike[]) => {
   return commands
     .map((c) => c.name)
     .sort()
     .join(",");
 };
 
-const mapCommandExtended = (c: Command) => {
+const mapCommandExtended = (c: CommandLike) => {
   return {
     name: c.name,
     description: c.description,
-    options: c.options?.map((o) =>
-      [o.name, o.description, o.type, o.required || false].join(",")
-    ),
+    options:
+      c.options?.map((o) =>
+        [o.name, o.description, o.type, o.required || false].join(",")
+      ) ?? [],
   };
 };

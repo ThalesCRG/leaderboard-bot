@@ -2,10 +2,15 @@ import {
   CacheType,
   CommandInteractionOptionResolver,
   MessagePayload,
+  MessageOptions,
   TextBasedChannel,
-  WebhookEditMessageOptions,
+  RESTPostAPIChatInputApplicationCommandsJSONBody,
 } from "discord.js";
 import { ILeaderboardEntity } from "./database/database-types";
+
+export type CommandLike =
+  | Command
+  | RESTPostAPIChatInputApplicationCommandsJSONBody;
 
 export interface Command {
   name: string;
@@ -33,10 +38,7 @@ export type DataHolder = Omit<
   "getMessage" | "getFocused"
 >;
 
-export type HandlerResponseMessage =
-  | string
-  | MessagePayload
-  | WebhookEditMessageOptions;
+export type HandlerResponseMessage = string | MessagePayload | MessageOptions;
 
 export type HandlerResponse = {
   message: HandlerResponseMessage;
@@ -48,6 +50,7 @@ export enum PostActionType {
   printLeaderboardFiltered,
   printMultipleLeaderboards,
   printMultipleFilteredLeaderboards,
+  updateLeaderboards,
 }
 
 export type PostAction = {

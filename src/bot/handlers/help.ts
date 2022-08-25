@@ -1,12 +1,13 @@
-import { MessageEmbedOptions } from "discord.js";
+import { APIEmbed, inlineCode } from "discord.js";
 import { Command, HandlerResponse } from "../../types";
 import { CommandNames } from "../command-names";
+import { AllowenceSubcommand } from "./allowence";
 
 export function helpHandler(): HandlerResponse {
   return {
     message: {
       content: "We're glad to help:",
-      embeds: [messegeEmbed],
+      embeds: [messageEmbed],
     },
   };
 }
@@ -16,10 +17,10 @@ export const helpCommand: Command = {
   description: "Prints a help message",
 };
 
-const messegeEmbed: MessageEmbedOptions = {
+const messageEmbed: APIEmbed = {
   title: "RDC Leaderboard Bot - Help Message",
   description: "We're happy to help you! Try those commands:",
-  color: "#fe6f27",
+  color: 0xfe6f27,
   fields: [
     { name: CommandNames.createLeaderboard, value: "Create a new leaderboard" },
     {
@@ -29,21 +30,18 @@ const messegeEmbed: MessageEmbedOptions = {
     },
     {
       name: CommandNames.cloneLeaderboard,
-      value: "Prints the leaderboard that has the ID you provided",
+      value: "Prints the leaderboard that has the ID you provided and updates it on new entries.",
     },
     {
       name: CommandNames.allLeaderboards,
-      value: "Prints all leaderboards that were created on this Discord server",
+      value: "Clones all leaderboards that were created on this Discord server",
     },
     {
-      name: CommandNames.addAllowence,
+      name: `${CommandNames.allowence} ${inlineCode(
+        `${AllowenceSubcommand.add} / ${AllowenceSubcommand.remove}`
+      )}`,
       value:
-        "When a Leaderboard is protected, only the creator and allowed person can create entries. With this command you can add somebody to the list of users, who are allowed to post new times",
-    },
-    {
-      name: CommandNames.removeAllowence,
-      value:
-        "Removes somebody from the list of users, who are allowed to post new times",
+        "When a Leaderboard is protected, only the creator and allowed person can create entries. With this command you can add or remove somebody to the list of users, who are allowed to post new times",
     },
     {
       name: CommandNames.deleteLeaderboard,

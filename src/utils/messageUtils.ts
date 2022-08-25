@@ -1,8 +1,20 @@
 import { IEntryEntity, ILeaderboardEntity } from "../database/database-types";
-import { getBestPerPerson } from "../database/database";
-import { TextBasedChannel } from "discord.js";
+import {
+  addLeaderboardMessage,
+  getBestPerPerson,
+  getLeaderboardMessages,
+  removeMessage,
+} from "../database/database";
+import {
+  DiscordAPIError,
+  Message,
+  TextBasedChannel,
+  userMention,
+} from "discord.js";
 var moment = require("moment");
 import momentDurationFormatSetup from "moment-duration-format";
+import { fetchMessage } from "../bot/bot";
+
 momentDurationFormatSetup(moment);
 
 const MAX_FIELD_LENGTH = 1024;
@@ -18,7 +30,8 @@ export async function printLeaderboard(
   const embeds = generateEmbeds(leaderboard, entries);
 
   try {
-    await channel.send({ embeds: [embeds] });
+    const message = await channel.send({ embeds: [embeds] });
+    addMessage(leaderboard.id, message, false);
   } catch (error) {
     console.log(error);
   }
@@ -42,7 +55,7 @@ export async function printMultipleFilteredLeaderboards(
   }
 }
 
-export function printFilteredLeaderboard(
+export async function printFilteredLeaderboard(
   leaderboard: ILeaderboardEntity,
   channel: TextBasedChannel
 ) {
@@ -51,7 +64,8 @@ export function printFilteredLeaderboard(
 
   const embeds = generateEmbeds(leaderboard, entries);
   try {
-    channel.send({ embeds: [embeds] });
+    const message = await channel.send({ embeds: [embeds] });
+    addMessage(leaderboard.id, message, true);
   } catch (error) {
     console.log(error);
   }
@@ -85,7 +99,7 @@ function parseOneEntry(entry: IEntryEntity, position: number): string {
   let result = "";
 
   if (entry) {
-    result = `${position}. ${mentionUser(entry.userId)} ${parseTime(
+    result = `${position}. ${userMention(entry.userId)} ${parseTime(
       entry.time
     )} ${entry.notes ? "  \\|\\|  " + entry.notes : ""}`;
   }
@@ -97,10 +111,6 @@ function parseTime(time: number): string {
   const duration = moment.duration(time);
 
   return duration.format("mm:ss.SSS");
-}
-
-function mentionUser(userId: string): string {
-  return `<@${userId}>`;
 }
 
 function generateEmbeds(
@@ -116,6 +126,7 @@ function generateEmbeds(
     footer: {
       text: `LeaderboardID: ${leaderboard.id}`,
     },
+    timestamp: new Date().toISOString(),
   };
   for (const entries of entriesArray) {
     embeds.fields.push({
@@ -126,4 +137,55 @@ function generateEmbeds(
   }
 
   return embeds;
+}
+
+function addMessage(
+  leaderboardId: string | undefined,
+  message: Message,
+  filtered = true
+) {
+  if (!leaderboardId) return;
+  const messageObject = {
+    messageId: message.id,
+    channelId: message.channelId,
+    filtered: filtered,
+  };
+  addLeaderboardMessage(leaderboardId, messageObject);
+}
+
+export async function updateLeaderboardMessages(
+  leaderboard: ILeaderboardEntity
+) {
+  if (!leaderboard.id) return;
+  const leaderboardMessages = await getLeaderboardMessages(leaderboard.id);
+  if (!leaderboardMessages) return;
+  for (const message of leaderboardMessages) {
+    try {
+      const leaderboardMessage = await fetchMessage(
+        message.channelId,
+        message.messageId
+      );
+
+      if (!leaderboardMessage) return;
+      await leaderboardMessage.edit({
+        embeds: [
+          generateEmbeds(
+            leaderboard,
+            parseEntries(
+              message.filtered
+                ? getBestPerPerson(leaderboard)
+                : leaderboard.entries
+            )
+          ),
+        ],
+      });
+    } catch (error) {
+      if (error instanceof DiscordAPIError && error.code === 10008) {
+        removeMessage(message.messageId, message.channelId);
+      } else {
+        console.log(error);
+      }
+    }
+  }
+  console.log(`Updated ${leaderboardMessages.length} messages.`);
 }

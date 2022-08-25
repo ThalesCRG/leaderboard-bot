@@ -1,9 +1,8 @@
+import { inlineCode, userMention } from "discord.js";
 import { connect, connection, model, Schema } from "mongoose";
-import { AddAllowence } from "../bot/handlers/add-allowence";
 import { CreateEntry } from "../bot/handlers/create-entry";
 import { CreateLeaderboard } from "../bot/handlers/create-leaderboard";
 import { DeleteLeaderboard } from "../bot/handlers/delete-leaderboard";
-import { RemoveAllowence } from "../bot/handlers/remove-allowence";
 import { SetDescription } from "../bot/handlers/set-description";
 import { SetProtected } from "../bot/handlers/set-protected";
 import { ConvertTimeStringToMilliseconds } from "../utils/time-utils";
@@ -11,27 +10,41 @@ import {
   Allowence,
   IEntryEntity,
   ILeaderboardEntity,
+  ILeaderboardMessage,
+  LeaderboardMessageDto,
   ProtectedResponse,
 } from "./database-types";
 
+const reqString = { type: String, required: true };
 const entrySchema = new Schema({
-  userId: { type: String, required: true },
+  userId: reqString,
   time: { type: Number, required: true },
   notes: String,
 });
 
 const leaderboardSchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  creatorId: { type: String, required: true },
+  name: reqString,
+  description: reqString,
+  creatorId: reqString,
   guildId: String,
   entries: [entrySchema],
   protected: Boolean,
   allowedList: [String],
 });
 
+const leaderboardMessageSchema = new Schema({
+  channelId: reqString,
+  filtered: Boolean,
+  messageId: reqString,
+  leaderboardId: reqString,
+});
+
 const Leaderboard = model<ILeaderboardEntity>("Leaderboard", leaderboardSchema);
 const Entry = model<IEntryEntity>("Entry", entrySchema);
+const LeaderboardMessage = model<ILeaderboardMessage>(
+  "LeaderboardMessages",
+  leaderboardMessageSchema
+);
 
 export async function initConnection(connectionString: string) {
   if (!connectionString) {
@@ -67,7 +80,7 @@ export async function saveLeaderboard(
   model: CreateLeaderboard,
   creatorId: string,
   guildId: string
-): Promise<string> {
+) {
   const leaderboard = new Leaderboard({
     name: model.name,
     description: model.description,
@@ -84,7 +97,7 @@ export async function saveLeaderboard(
     throw new Error(`could not persist leaderboard with name ${model.name}`);
   }
 
-  return leaderboard.id as string;
+  return leaderboard;
 }
 
 const isPersonAllowed = (
@@ -201,7 +214,7 @@ export function getAllowedPersons(
 }
 
 export async function addAllowence(
-  model: AddAllowence,
+  model: Allowence,
   executorId: string
 ): Promise<Allowence | undefined> {
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
@@ -226,7 +239,7 @@ export async function addAllowence(
 }
 
 export async function removeAllowence(
-  model: RemoveAllowence,
+  model: Allowence,
   executorId: string
 ): Promise<Allowence | undefined> {
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
@@ -245,9 +258,9 @@ export async function removeAllowence(
     );
   } else
     throw new Error(
-      `<@${
+      `${userMention(
         model.userId
-      }> was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
+      )} was not on the allow-list for leaderboard ${leaderboard._id.toString()}`
     );
   try {
     await leaderboard.save();
@@ -313,7 +326,7 @@ export async function setLeaderboardDescription(
   const leaderboard = await Leaderboard.findById(model.leaderboardId);
   if (!leaderboard)
     throw new Error(
-      `Leaderboard with \`id\` ${model.leaderboardId} does not exist`
+      `Leaderboard with id ${inlineCode(model.leaderboardId)} does not exist`
     );
 
   if (leaderboard.creatorId !== executor)
@@ -328,4 +341,50 @@ export async function setLeaderboardDescription(
   } catch (error) {
     console.log(error);
   }
+}
+
+export async function getLeaderboardMessages(
+  leaderboardId: string
+): Promise<LeaderboardMessageDto[]> {
+  const leaderboardMesssages = await LeaderboardMessage.find({
+    leaderboardId,
+  });
+
+  return leaderboardMesssages.map((message) => {
+    return {
+      messageId: message.messageId,
+      channelId: message.channelId,
+      leaderboardId: message.leaderboardId,
+      filtered: message.filtered,
+    };
+  });
+}
+
+export async function addLeaderboardMessage(
+  leaderboardId: string,
+  message: { channelId: string; messageId: string; filtered: boolean }
+): Promise<LeaderboardMessageDto> {
+  const leaderboardMessage = new LeaderboardMessage();
+  leaderboardMessage.leaderboardId = leaderboardId;
+  leaderboardMessage.messageId = message.messageId;
+  leaderboardMessage.channelId = message.channelId;
+  leaderboardMessage.filtered = message.filtered;
+  await leaderboardMessage.save();
+
+  return {
+    messageId: leaderboardMessage.messageId,
+    channelId: leaderboardMessage.channelId,
+    leaderboardId: leaderboardMessage.leaderboardId,
+    filtered: leaderboardMessage.filtered,
+  };
+}
+
+export async function removeMessage(messageId: string, channelId: string) {
+  await LeaderboardMessage.deleteMany({ messageId, channelId });
+  console.log(`Removed ${messageId} in channel ${channelId}`);
+}
+
+export async function removeLeaderboardMessages(leaderboardId: string) {
+  await LeaderboardMessage.deleteMany({ leaderboardId });
+  console.log(`Removed all messages for ${leaderboardId}`);
 }
