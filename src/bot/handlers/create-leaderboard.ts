@@ -5,6 +5,7 @@ import {
   DataHolder,
   DiscordDataTypes,
   HandlerResponse,
+  PostActionType,
 } from "../../types";
 import { LEADERBOARD_NAME_MAX_LENGTH } from "../../utils/LeaderboardUtils";
 import { MAX_DESCRIPTION_LENGTH } from "../../utils/messageUtils";
@@ -60,9 +61,17 @@ export const createLeaderboardHandler = async (
     throw new ValidationError(model.errors);
   }
 
-  const id = await database.saveLeaderboard(model, user, guild);
+  const leaderboard = await database.saveLeaderboard(model, user, guild);
 
-  return { message: `Leaderboard with ID: ${inlineCode(id)} created.` };
+  return {
+    message: `Leaderboard with ID: ${inlineCode(leaderboard.id)} created.`,
+    postActions: [
+      {
+        action: PostActionType.printLeaderboardFiltered,
+        data: { leaderboard },
+      },
+    ],
+  };
 };
 
 enum CreateLeaderboardOption {
@@ -89,7 +98,8 @@ export const createLeaderboardCommand: Command = {
     },
     {
       name: CreateLeaderboardOption.protected,
-      description: "If a leaderboard is protected, only the creator and members of the allow-list may add entries.",
+      description:
+        "If a leaderboard is protected, only the creator and members of the allow-list may add entries.",
       type: DiscordDataTypes.BOOLEAN,
       required: false,
     },

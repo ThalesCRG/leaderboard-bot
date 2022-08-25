@@ -10,7 +10,7 @@ export async function myleaderboardsHandler(
   const channel = await getDMChannelToUser(userId);
 
   if (channel === null) {
-    console.error(`could not oepn a DM channel with user ${userId}`);
+    console.error(`could not open a DM channel with user ${userId}`);
     throw new Error(
       "An error occurred: Could not reach you via DM. You may try again..."
     );

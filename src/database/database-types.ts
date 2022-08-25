@@ -25,13 +25,16 @@ export interface ProtectedResponse {
   protectedFlag: boolean;
 }
 
-export interface ILeaderboardMessages extends Document {
+export interface ILeaderboardMessage extends Document {
   leaderboardId: string;
-  messages: LeaderboardMessage[];
-}
-
-export interface LeaderboardMessage {
   channelId: string;
   filtered: boolean;
   messageId: string;
 }
+
+export type LeaderboardMessageDto = {
+  messageId: string;
+  channelId: string;
+  leaderboardId: string;
+  filtered: boolean;
+};

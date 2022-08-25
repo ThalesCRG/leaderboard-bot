@@ -13,7 +13,7 @@ import {
 } from "discord.js";
 var moment = require("moment");
 import momentDurationFormatSetup from "moment-duration-format";
-import { client } from "../bot/bot";
+import { fetchMessage } from "../bot/bot";
 
 momentDurationFormatSetup(moment);
 
@@ -147,7 +147,7 @@ function addMessage(
   if (!leaderboardId) return;
   const messageObject = {
     messageId: message.id,
-    channelId: message.channel.id,
+    channelId: message.channelId,
     filtered: filtered,
   };
   addLeaderboardMessage(leaderboardId, messageObject);
@@ -159,13 +159,12 @@ export async function updateLeaderboardMessages(
   if (!leaderboard.id) return;
   const leaderboardMessages = await getLeaderboardMessages(leaderboard.id);
   if (!leaderboardMessages) return;
-  for (const message of leaderboardMessages.messages) {
+  for (const message of leaderboardMessages) {
     try {
-      const channel = await client.channels.fetch(message.channelId);
-      if (!channel) return;
-      const leaderboardMessage = await (
-        channel as TextBasedChannel
-      ).messages.fetch(message.messageId);
+      const leaderboardMessage = await fetchMessage(
+        message.channelId,
+        message.messageId
+      );
 
       if (!leaderboardMessage) return;
       await leaderboardMessage.edit({
@@ -182,14 +181,11 @@ export async function updateLeaderboardMessages(
       });
     } catch (error) {
       if (error instanceof DiscordAPIError && error.code === 10008) {
-        const urlParts = error.url.split("/");
-        const channel = urlParts[urlParts.indexOf("channels") + 1];
-        const messageId = urlParts[urlParts.indexOf("messages") + 1];
-        removeMessage(messageId, channel, leaderboard.id);
+        removeMessage(message.messageId, message.channelId);
       } else {
         console.log(error);
       }
     }
   }
-  console.log(`Updated ${leaderboardMessages.messages.length} messages.`);
+  console.log(`Updated ${leaderboardMessages.length} messages.`);
 }

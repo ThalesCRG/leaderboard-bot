@@ -3,6 +3,7 @@ import { addEntry } from "../../database/database";
 import {
   Command,
   DataHolder,
+  DiscordDataTypes,
   HandlerResponse,
   PostActionType,
 } from "../../types";
@@ -18,12 +19,14 @@ export class CreateEntry extends BaseModel {
   time: string;
   driver: string;
   notes: string | null;
+  clone: boolean | null;
   constructor(data: DataHolder, user: string) {
     super();
     this.leaderboardId = data.getString(CreateEntryOption.leaderboardId, true);
     this.time = data.getString(CreateEntryOption.time, true);
     this.driver = data.getUser(CreateEntryOption.driver)?.id ?? user;
     this.notes = data.getString(CreateEntryOption.notes);
+    this.clone = data.getBoolean(CreateEntryOption.clone);
   }
 
   validate() {
@@ -52,12 +55,26 @@ export const createEntryHandler = async (
 
   const [id, leaderboard] = await addEntry(model, user);
 
-  const postActions = [
-    {
-      action: PostActionType.updateLeaderboards,
-      data: { leaderboard },
-    },
-  ];
+  let postActions = [];
+  if (model.clone) {
+    postActions = [
+      {
+        action: PostActionType.printLeaderboardFiltered,
+        data: { leaderboard },
+      },
+      {
+        action: PostActionType.updateLeaderboards,
+        data: { leaderboard },
+      },
+    ];
+  } else {
+    postActions = [
+      {
+        action: PostActionType.updateLeaderboards,
+        data: { leaderboard },
+      },
+    ];
+  }
 
   return {
     message: `Added entry for ${userMention(model.driver)} to leaderboard: ${
@@ -72,6 +89,7 @@ enum CreateEntryOption {
   time = "time",
   driver = "driver",
   notes = "notes",
+  clone = "clone",
 }
 
 export const createEntryCommand: Command = {
@@ -81,25 +99,31 @@ export const createEntryCommand: Command = {
     {
       name: CreateEntryOption.leaderboardId,
       description: "Id of the Leaderboard to which the entry shall be added",
-      type: 3,
+      type: DiscordDataTypes.STRING,
       required: true,
     },
     {
       name: CreateEntryOption.time,
       description: "Time in format MM:SS.mmm",
-      type: 3,
+      type: DiscordDataTypes.STRING,
       required: true,
     },
     {
       name: CreateEntryOption.driver,
       description: "Driver name, defaults to requesting user",
-      type: 6,
+      type: DiscordDataTypes.USER,
       required: false,
     },
     {
       name: CreateEntryOption.notes,
       description: "Want to add a note? e.g. car, conditions, ...",
-      type: 3,
+      type: DiscordDataTypes.STRING,
+      required: false,
+    },
+    {
+      name: CreateEntryOption.clone,
+      description: "Do you want to clone the leaderboard into a new message?",
+      type: DiscordDataTypes.BOOLEAN,
       required: false,
     },
   ],

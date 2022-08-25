@@ -30,11 +30,11 @@ const messageEmbed: APIEmbed = {
     },
     {
       name: CommandNames.cloneLeaderboard,
-      value: "Prints the leaderboard that has the ID you provided",
+      value: "Prints the leaderboard that has the ID you provided and updates it on new entries.",
     },
     {
       name: CommandNames.allLeaderboards,
-      value: "Prints all leaderboards that were created on this Discord server",
+      value: "Clones all leaderboards that were created on this Discord server",
     },
     {
       name: `${CommandNames.allowence} ${inlineCode(

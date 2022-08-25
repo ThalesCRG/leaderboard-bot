@@ -1,5 +1,8 @@
 import { inlineCode } from "discord.js";
-import { deleteLeaderboard } from "../../database/database";
+import {
+  deleteLeaderboard,
+  removeLeaderboardMessages,
+} from "../../database/database";
 import {
   Command,
   DataHolder,
@@ -45,6 +48,7 @@ export async function deleteLeaderboardHandler(
   }
 
   const result = await deleteLeaderboard(model, executorId);
+  await removeLeaderboardMessages(model.leaderboardId);
   if (!result)
     throw new Error(
       "Sorry, there was an error in the database. Please try again later."

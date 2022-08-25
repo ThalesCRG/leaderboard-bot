@@ -3,6 +3,7 @@ import {
   CacheType,
   Client,
   CommandInteraction,
+  DiscordAPIError,
   DMChannel,
   Interaction,
   TextBasedChannel,
@@ -181,6 +182,13 @@ async function fetchChannel(
   return (await client.channels.fetch(channelId, {
     force: true,
   })) as TextBasedChannel;
+}
+
+export async function fetchMessage(channelId: string, messageId: string) {
+  const channel = await client.channels.fetch(channelId);
+  if (!channel) return;
+  const message = await (channel as TextBasedChannel).messages.fetch(messageId);
+  return message;
 }
 
 const compareCommandLists = (

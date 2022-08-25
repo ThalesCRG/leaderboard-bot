@@ -10,8 +10,8 @@ import {
   Allowence,
   IEntryEntity,
   ILeaderboardEntity,
-  LeaderboardMessage,
-  ILeaderboardMessages,
+  ILeaderboardMessage,
+  LeaderboardMessageDto,
   ProtectedResponse,
 } from "./database-types";
 
@@ -36,18 +36,14 @@ const leaderboardMessageSchema = new Schema({
   channelId: reqString,
   filtered: Boolean,
   messageId: reqString,
-});
-
-const leaderboardMessagesSchema = new Schema({
   leaderboardId: reqString,
-  messages: [leaderboardMessageSchema],
 });
 
 const Leaderboard = model<ILeaderboardEntity>("Leaderboard", leaderboardSchema);
 const Entry = model<IEntryEntity>("Entry", entrySchema);
-const LeaderboardMessages = model<ILeaderboardMessages>(
+const LeaderboardMessage = model<ILeaderboardMessage>(
   "LeaderboardMessages",
-  leaderboardMessagesSchema
+  leaderboardMessageSchema
 );
 
 export async function initConnection(connectionString: string) {
@@ -84,7 +80,7 @@ export async function saveLeaderboard(
   model: CreateLeaderboard,
   creatorId: string,
   guildId: string
-): Promise<string> {
+) {
   const leaderboard = new Leaderboard({
     name: model.name,
     description: model.description,
@@ -101,7 +97,7 @@ export async function saveLeaderboard(
     throw new Error(`could not persist leaderboard with name ${model.name}`);
   }
 
-  return leaderboard.id as string;
+  return leaderboard;
 }
 
 const isPersonAllowed = (
@@ -349,49 +345,46 @@ export async function setLeaderboardDescription(
 
 export async function getLeaderboardMessages(
   leaderboardId: string
-): Promise<ILeaderboardMessages | null> {
-  const leaderboardMesssages = await LeaderboardMessages.findOne({
+): Promise<LeaderboardMessageDto[]> {
+  const leaderboardMesssages = await LeaderboardMessage.find({
     leaderboardId,
   });
 
-  return leaderboardMesssages;
+  return leaderboardMesssages.map((message) => {
+    return {
+      messageId: message.messageId,
+      channelId: message.channelId,
+      leaderboardId: message.leaderboardId,
+      filtered: message.filtered,
+    };
+  });
 }
 
 export async function addLeaderboardMessage(
   leaderboardId: string,
   message: { channelId: string; messageId: string; filtered: boolean }
-): Promise<ILeaderboardMessages> {
-  const existingleaderboardMesssages = await LeaderboardMessages.findOne({
-    leaderboardId,
-  });
+): Promise<LeaderboardMessageDto> {
+  const leaderboardMessage = new LeaderboardMessage();
+  leaderboardMessage.leaderboardId = leaderboardId;
+  leaderboardMessage.messageId = message.messageId;
+  leaderboardMessage.channelId = message.channelId;
+  leaderboardMessage.filtered = message.filtered;
+  await leaderboardMessage.save();
 
-  if (!existingleaderboardMesssages) {
-    const leaderboardMessages = new LeaderboardMessages();
-    leaderboardMessages.leaderboardId = leaderboardId;
-    leaderboardMessages.messages = [message];
-    await leaderboardMessages.save();
-    return leaderboardMessages;
-  }
-
-  existingleaderboardMesssages.messages.push(message);
-  await existingleaderboardMesssages.save();
-  return existingleaderboardMesssages;
+  return {
+    messageId: leaderboardMessage.messageId,
+    channelId: leaderboardMessage.channelId,
+    leaderboardId: leaderboardMessage.leaderboardId,
+    filtered: leaderboardMessage.filtered,
+  };
 }
 
-export async function removeMessage(
-  messageId: string,
-  channelId: string,
-  leaderboardId: string
-) {
-  const Leaderboard = await LeaderboardMessages.findOne({ leaderboardId });
-  if (!Leaderboard) return;
+export async function removeMessage(messageId: string, channelId: string) {
+  await LeaderboardMessage.remove({ messageId, channelId });
+  console.log(`Removed ${messageId} in channel ${channelId}`);
+}
 
-  Leaderboard.messages = Leaderboard.messages.filter((entry) => {
-    return entry.channelId !== channelId && entry.messageId !== messageId;
-  });
-
-  console.log(
-    `Deleted Message ${messageId} in Channel ${channelId} from Leaderboard ${leaderboardId}`
-  );
-  await Leaderboard.save();
+export async function removeLeaderboardMessages(leaderboardId: string) {
+  await LeaderboardMessage.remove({ leaderboardId });
+  console.log(`Removed all messages for ${leaderboardId}`);
 }
