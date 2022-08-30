@@ -29,6 +29,9 @@ import {
   printMultipleLeaderboards,
   updateLeaderboardMessages,
 } from "../utils/messageUtils";
+import { isPersonAllowedById } from "../database/database";
+
+import { handleButtonInteraction } from "./handlers/.button-generator";
 
 export const client = new Client({
   intents: ["Guilds", "GuildMessages", "DirectMessages"],
@@ -84,14 +87,61 @@ export async function initConnection(token: string) {
   console.log(`Bot ${client.user?.username} is up and running`);
 }
 
+const handlers = {
+  "create-entry": {
+    convertCommand: (i: any) => {},
+    convertSubmit: (i: any) => {},
+    handleInteraction: (d: any): { message: string; postActions: any[] } => {
+      return {} as any;
+    },
+  },
+};
+
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
-  if (interaction.isModalSubmit()) {
-    await handleModalSubmitInteraction(interaction);
-  } else if (interaction.isButton()) {
-    await handleButtonInteraction(interaction);
-  } else if (interaction.isCommand()) {
-    await handleCommandInteraction(interaction);
+  if (interaction.isButton()) {
+    return await handleButton(interaction);
   }
+
+  if (interaction.isModalSubmit() || interaction.isCommand()) {
+    const interactionName = "create-entry";
+    const data: any = interaction.isCommand()
+      ? handlers[interactionName].convertCommand(interaction)
+      : handlers[interactionName].convertSubmit(interaction);
+
+    const response = handlers[interactionName].handleInteraction(data);
+
+    if (response.postActions?.length) {
+      response.postActions.forEach((action) => {
+        handlePostAction(action, interaction);
+      });
+    }
+
+    if (interaction.isModalSubmit()) {
+      interaction.reply({
+        content: response.message as string,
+        ephemeral: true,
+      });
+    } else {
+      changeReply(interaction, response.message);
+    }
+  } else {
+    console.error(
+      "really have no idea why u came here, but you shouldn't: wrong interaction type"
+    );
+  }
+};
+
+const handleButton = async (interaction: any): Promise<void> => {
+  if (!isUserAllowed(interaction)) {
+    console.log("user {id} not allowed to execute button interaction {name}");
+    interaction.reply({
+      content: "You are not allowed to create a new Entry to this leaderboard.",
+      ephemeral: true,
+    });
+  }
+
+  await handleButtonInteraction(interaction);
+  console.log("created a button for {command}. waiting for response...");
 };
 
 async function handleCommandInteraction(interaction: Interaction) {
@@ -121,79 +171,6 @@ async function handleCommandInteraction(interaction: Interaction) {
     console.error("an error occurred. sending error response", error);
     response.message = `${error}`;
   }
-
-  changeReply(interaction, response.message);
-}
-
-async function handleButtonInteraction(
-  interaction: ButtonInteraction<CacheType>
-) {
-  const buttonInteraction = interaction as ButtonInteraction;
-  // Do NOT reply. Once replied, a modal can not be shown anymore.
-  const buttonType = buttonInteraction.customId.split("-")[0];
-
-  let response: HandlerResponse;
-
-  try {
-    response = await buttonHandlers[buttonType](buttonInteraction);
-
-    console.log(
-      `handler for ${buttonType} returned with response`,
-      response?.message
-    );
-
-    if (response?.postActions?.length) {
-      response.postActions.forEach((action) => {
-        handlePostAction(action, interaction);
-      });
-    }
-  } catch (error) {
-    console.error("an error occurred. sending error response", error);
-    response = { message: `${error}` };
-  }
-  if (response?.message) {
-    if (buttonInteraction.replied) {
-      buttonInteraction.editReply({
-        content: response.message as string,
-      }); //muss repariert werden
-    } else {
-      buttonInteraction.reply({
-        content: response.message as string,
-        ephemeral: true,
-      });
-    }
-  }
-}
-
-async function handleModalSubmitInteraction(
-  interaction: ModalSubmitInteraction<CacheType>
-) {
-  const modalSubmitInteraction = interaction as ModalSubmitInteraction;
-
-  let response: HandlerResponse = { message: "no response retrieved" };
-
-  try {
-    const modalSubmitType = modalSubmitInteraction.customId.split("-")[0];
-
-    response = await modalHandlers[modalSubmitType](modalSubmitInteraction);
-    console.log(
-      `handler for ${modalSubmitType} returned with response`,
-      response.message
-    );
-
-    if (response.postActions?.length) {
-      response.postActions.forEach((action) => {
-        handlePostAction(action, interaction);
-      });
-    }
-  } catch (error) {
-    console.error("an error occurred. sending error response", error);
-    response.message = `${error}`;
-  }
-  modalSubmitInteraction.reply({
-    content: response.message as string,
-    ephemeral: true,
-  });
 }
 
 export async function changeReply(
@@ -250,6 +227,13 @@ const handlePostAction = async (
       `could not execute post action ${action.action}. action name not found or data not correct`
     );
   }
+};
+
+const isUserAllowed = async (interaction: any): Promise<boolean> => {
+  const leaderboardId = interaction.customId.split("-")[1];
+  const userId = interaction.user.id;
+  // TODO: may this should be in "allowance.service.ts"
+  return await isPersonAllowedById(leaderboardId, userId);
 };
 
 export const getDMChannelToUser = async (
