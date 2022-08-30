@@ -1,5 +1,16 @@
-import { userMention } from "discord.js";
-import { addEntry } from "../../database/database";
+import {
+  ActionRowBuilder,
+  ButtonInteraction,
+  CacheType,
+  ModalBuilder,
+  ModalSubmitInteraction,
+  SnowflakeUtil,
+  TextInputBuilder,
+  TextInputModalData,
+  TextInputStyle,
+  userMention,
+} from "discord.js";
+import { addEntry, isPersonAllowedById } from "../../database/database";
 import {
   Command,
   DataHolder,
@@ -14,19 +25,39 @@ import { CommandNames } from "../command-names";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";
 
+type CreateEntryData = {
+  leaderboardId: string;
+  time: string;
+  notes: string | null;
+  clone: boolean | null;
+};
+
 export class CreateEntry extends BaseModel {
   leaderboardId: string;
   time: string;
   driver: string;
   notes: string | null;
   clone: boolean | null;
-  constructor(data: DataHolder, user: string) {
+  constructor(data: DataHolder | CreateEntryData, user: string) {
     super();
-    this.leaderboardId = data.getString(CreateEntryOption.leaderboardId, true);
-    this.time = data.getString(CreateEntryOption.time, true);
-    this.driver = data.getUser(CreateEntryOption.driver)?.id ?? user;
-    this.notes = data.getString(CreateEntryOption.notes);
-    this.clone = data.getBoolean(CreateEntryOption.clone);
+    if (data.hasOwnProperty("leaderboardId")) {
+      const createEntryData = data as CreateEntryData;
+      this.leaderboardId = createEntryData.leaderboardId;
+      this.time = createEntryData.time;
+      this.driver = user;
+      this.notes = createEntryData.notes;
+      this.clone = false;
+      return;
+    }
+    const dataHolder = data as DataHolder;
+    this.leaderboardId = dataHolder.getString(
+      CreateEntryOption.leaderboardId,
+      true
+    );
+    this.time = dataHolder.getString(CreateEntryOption.time, true);
+    this.driver = dataHolder.getUser(CreateEntryOption.driver)?.id ?? user;
+    this.notes = dataHolder.getString(CreateEntryOption.notes);
+    this.clone = dataHolder.getBoolean(CreateEntryOption.clone);
   }
 
   validate() {
@@ -42,7 +73,7 @@ export class CreateEntry extends BaseModel {
   }
 }
 
-export const createEntryHandler = async (
+export const createEntryCommandHandler = async (
   data: DataHolder,
   user: string
 ): Promise<HandlerResponse> => {
@@ -53,6 +84,19 @@ export const createEntryHandler = async (
     throw new ValidationError(model.errors);
   }
 
+  return await createEntryHandler(model, user);
+};
+
+export const createEntryButtonprefix = "addEntryButton";
+
+enum CreateEntryModalOptions {
+  setTime = "setTime",
+  setNote = "setNote",
+}
+
+export const createEntryModalPrefix = "addEntryModal";
+
+async function createEntryHandler(model: CreateEntry, user: string) {
   const [id, leaderboard] = await addEntry(model, user);
 
   let postActions = [];
@@ -82,7 +126,63 @@ export const createEntryHandler = async (
     }`,
     postActions,
   };
-};
+}
+
+export async function createEntryButtonHandler(
+  buttonInteraction: ButtonInteraction
+): Promise<HandlerResponse | undefined> {
+  const leaderboardId = buttonInteraction.customId.split("-")[1];
+  const userId = buttonInteraction.user.id;
+  const isAllowed = await isPersonAllowedById(leaderboardId, userId);
+  if (!isAllowed) {
+    return {
+      message: "You are not allowed to create a new Entry to this leaderboard.",
+    };
+  }
+
+  const addEntryModal = new ModalBuilder()
+    .setCustomId(`addEntryModal-${leaderboardId}-${SnowflakeUtil.generate()}`)
+    .setTitle("Add Entry to Leaderboard")
+    .addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+          .setCustomId(`${CreateEntryModalOptions.setTime}`)
+          .setLabel("Time to add")
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true)
+      )
+    )
+    .addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+          .setCustomId(`${CreateEntryModalOptions.setNote}`)
+          .setLabel("Notes")
+          .setStyle(TextInputStyle.Short)
+          .setRequired(false)
+      )
+    );
+
+  buttonInteraction.showModal(addEntryModal);
+}
+
+export async function createEntryModalSubmitHandler(
+  modalSubmitInteraction: ModalSubmitInteraction
+) {
+  const parsedData: CreateEntryData = parseModalSubmitData(
+    modalSubmitInteraction
+  );
+
+  const userId = modalSubmitInteraction.user.id;
+
+  const model = new CreateEntry(parsedData, userId);
+
+  if (!model.isValid) {
+    console.error("create entry model is not valid", JSON.stringify(model));
+    throw new ValidationError(model.errors);
+  }
+
+  return await createEntryHandler(model, userId);
+}
 
 enum CreateEntryOption {
   leaderboardId = "leaderboardid",
@@ -128,3 +228,29 @@ export const createEntryCommand: Command = {
     },
   ],
 };
+
+function parseModalSubmitData(
+  modalSubmitInteraction: ModalSubmitInteraction<CacheType>
+): CreateEntryData {
+  const components = modalSubmitInteraction.components
+    .map((comp) => comp.components as TextInputModalData[])
+    .flat();
+
+  const leaderboardId = modalSubmitInteraction.customId.split("-")[1] as string;
+
+  const notes = components.find(
+    (comp) => comp.customId === CreateEntryModalOptions.setNote
+  )?.value as string;
+
+  const time = components.find(
+    (comp) => comp.customId === CreateEntryModalOptions.setTime
+  )?.value as string;
+
+  const data: CreateEntryData = {
+    leaderboardId,
+    time,
+    notes,
+    clone: false,
+  };
+  return data;
+}

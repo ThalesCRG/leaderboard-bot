@@ -9,4 +9,5 @@ export enum CommandNames {
   help = "help",
   setDescription = "setdescription",
   allowence = "allowence",
+  updateLeaderboard = "updateleaderboard",
 }

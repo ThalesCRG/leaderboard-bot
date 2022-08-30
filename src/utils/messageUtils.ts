@@ -6,6 +6,9 @@ import {
   removeMessage,
 } from "../database/database";
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   DiscordAPIError,
   Message,
   TextBasedChannel,
@@ -14,6 +17,7 @@ import {
 var moment = require("moment");
 import momentDurationFormatSetup from "moment-duration-format";
 import { fetchMessage } from "../bot/bot";
+import { createEntryButtonprefix } from "../bot/handlers/create-entry";
 
 momentDurationFormatSetup(moment);
 
@@ -22,19 +26,35 @@ export const MAX_DESCRIPTION_LENGTH = 4096;
 
 export async function printLeaderboard(
   leaderboard: ILeaderboardEntity,
-  channel: TextBasedChannel
+  channel: TextBasedChannel,
+  filtered = false
 ) {
   if (!leaderboard || !channel) return;
-  const entries = parseEntries(leaderboard.entries);
-
-  const embeds = generateEmbeds(leaderboard, entries);
+  const message = generateMessage(leaderboard, filtered);
 
   try {
-    const message = await channel.send({ embeds: [embeds] });
-    addMessage(leaderboard.id, message, false);
+    const response = await channel.send(message);
+    addMessage(leaderboard.id, response, filtered);
   } catch (error) {
     console.log(error);
   }
+}
+
+function generateMessage(leaderboard: ILeaderboardEntity, filtered: boolean) {
+  const embeds = generateEmbeds(
+    leaderboard,
+    parseEntries(filtered ? getBestPerPerson(leaderboard) : leaderboard.entries)
+  );
+
+  const actionBuilder = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`${createEntryButtonprefix}-${leaderboard.id}`)
+      .setLabel("Add Entry")
+      .setStyle(ButtonStyle.Success)
+  );
+
+  const message = { embeds: [embeds], components: [actionBuilder] };
+  return message;
 }
 
 export async function printMultipleLeaderboards(
@@ -51,23 +71,7 @@ export async function printMultipleFilteredLeaderboards(
   channel: TextBasedChannel
 ) {
   for (const leaderboard of leaderboards) {
-    printFilteredLeaderboard(leaderboard, channel);
-  }
-}
-
-export async function printFilteredLeaderboard(
-  leaderboard: ILeaderboardEntity,
-  channel: TextBasedChannel
-) {
-  if (!leaderboard || !channel) return;
-  const entries = parseEntries(getBestPerPerson(leaderboard));
-
-  const embeds = generateEmbeds(leaderboard, entries);
-  try {
-    const message = await channel.send({ embeds: [embeds] });
-    addMessage(leaderboard.id, message, true);
-  } catch (error) {
-    console.log(error);
+    printLeaderboard(leaderboard, channel, true);
   }
 }
 
@@ -166,19 +170,10 @@ export async function updateLeaderboardMessages(
         message.messageId
       );
 
+      const sendmessage = generateMessage(leaderboard, message.filtered);
+
       if (!leaderboardMessage) return;
-      await leaderboardMessage.edit({
-        embeds: [
-          generateEmbeds(
-            leaderboard,
-            parseEntries(
-              message.filtered
-                ? getBestPerPerson(leaderboard)
-                : leaderboard.entries
-            )
-          ),
-        ],
-      });
+      await leaderboardMessage.edit(sendmessage);
     } catch (error) {
       if (error instanceof DiscordAPIError && error.code === 10008) {
         removeMessage(message.messageId, message.channelId);
