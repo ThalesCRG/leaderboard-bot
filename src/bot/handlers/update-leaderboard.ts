@@ -13,14 +13,14 @@ import { CommandNames } from "../command-names";
 import { BaseModel } from "./base-model";
 import { ValidationError } from "./validation-error";
 
-type UpdateLeaderboardData = {
-  leaderboardId: string;
-};
 export class UpdateLeaderboard extends BaseModel {
   leaderboardId: string;
-  constructor(data: UpdateLeaderboardData) {
+  constructor(data: DataHolder) {
     super();
-    this.leaderboardId = data.leaderboardId;
+    this.leaderboardId = data.getString(
+      UpdateLeaderboardOption.leaderboardId,
+      true
+    );
   }
 
   validate() {
@@ -36,8 +36,7 @@ export const updateLeaderboardHandler = async (
   user: string,
   guild: string
 ): Promise<HandlerResponse> => {
-  const parsedData = dataHolderParser(data);
-  const model = new UpdateLeaderboard(parsedData);
+  const model = new UpdateLeaderboard(data);
 
   if (!model.isValid) {
     console.error(
@@ -79,11 +78,3 @@ export const updateLeaderboardCommand: Command = {
     },
   ],
 };
-
-function dataHolderParser(data: DataHolder): UpdateLeaderboardData {
-  const leaderboardId = data.getString(
-    UpdateLeaderboardOption.leaderboardId,
-    true
-  );
-  return { leaderboardId };
-}
