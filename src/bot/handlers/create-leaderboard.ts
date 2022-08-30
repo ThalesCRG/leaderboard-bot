@@ -52,7 +52,6 @@ export const createLeaderboardHandler = async (
 ): Promise<HandlerResponse> => {
   const model = new CreateLeaderboard(data);
 
-  console.log("valid", model.isValid);
   if (!model.isValid) {
     console.error(
       "create leaderboard model is not valid",

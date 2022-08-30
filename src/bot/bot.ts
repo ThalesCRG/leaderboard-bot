@@ -1,13 +1,20 @@
 import {
   ApplicationCommand,
+  AutocompleteInteraction,
+  ButtonInteraction,
   CacheType,
   Client,
   CommandInteraction,
   DMChannel,
   Interaction,
+  ModalSubmitInteraction,
   TextBasedChannel,
 } from "discord.js";
-import handlers, { commands } from "./handlers";
+import commandHandlers, {
+  buttonHandlers,
+  commands,
+  modalHandlers,
+} from "./handlers";
 import {
   Command,
   CommandLike,
@@ -17,7 +24,6 @@ import {
   PostActionType,
 } from "../types";
 import {
-  printFilteredLeaderboard,
   printLeaderboard,
   printMultipleFilteredLeaderboards,
   printMultipleLeaderboards,
@@ -74,47 +80,128 @@ export async function initConnection(token: string) {
   } else {
     console.log("all commands up to date");
   }
-
   client.on("interactionCreate", handleInteractions);
+  console.log(`Bot ${client.user?.username} is up and running`);
 }
 
 const handleInteractions = async (interaction: Interaction<CacheType>) => {
-  if (interaction.isCommand()) {
-    await interaction.reply({ content: "wait a second", ephemeral: true });
-
-    let response: HandlerResponse = { message: "no response retrieved" };
-
-    try {
-      response = await handlers[interaction.commandName](
-        interaction.options,
-        interaction.user?.id,
-        interaction.guildId
-      );
-
-      console.log(
-        `handler for ${interaction.commandName} returned with response`,
-        response.message
-      );
-
-      if (response.postActions?.length) {
-        response.postActions.forEach((action) => {
-          handlePostAction(action, interaction);
-        });
-      }
-    } catch (error) {
-      console.error("an error occurred. sending error response", error);
-      response.message = `${error}`;
-    }
-
-    changeReply(interaction, response.message);
+  if (interaction.isModalSubmit()) {
+    await handleModalSubmitInteraction(interaction);
+  } else if (interaction.isButton()) {
+    await handleButtonInteraction(interaction);
+  } else if (interaction.isCommand()) {
+    await handleCommandInteraction(interaction);
   }
 };
 
+async function handleCommandInteraction(interaction: Interaction) {
+  const commandInteraction = interaction as CommandInteraction;
+  await commandInteraction.reply({ content: "wait a second", ephemeral: true });
+
+  let response: HandlerResponse = { message: "no response retrieved" };
+
+  try {
+    response = await commandHandlers[commandInteraction.commandName](
+      commandInteraction.options,
+      commandInteraction.user?.id,
+      commandInteraction.guildId
+    );
+
+    console.log(
+      `handler for ${commandInteraction.commandName} returned with response`,
+      response.message
+    );
+
+    if (response.postActions?.length) {
+      response.postActions.forEach((action) => {
+        handlePostAction(action, interaction);
+      });
+    }
+  } catch (error) {
+    console.error("an error occurred. sending error response", error);
+    response.message = `${error}`;
+  }
+
+  changeReply(interaction, response.message);
+}
+
+async function handleButtonInteraction(
+  interaction: ButtonInteraction<CacheType>
+) {
+  const buttonInteraction = interaction as ButtonInteraction;
+  // Do NOT reply. Once replied, a modal can not be shown anymore.
+  const buttonType = buttonInteraction.customId.split("-")[0];
+
+  let response: HandlerResponse;
+
+  try {
+    response = await buttonHandlers[buttonType](buttonInteraction);
+
+    console.log(
+      `handler for ${buttonType} returned with response`,
+      response?.message
+    );
+
+    if (response?.postActions?.length) {
+      response.postActions.forEach((action) => {
+        handlePostAction(action, interaction);
+      });
+    }
+  } catch (error) {
+    console.error("an error occurred. sending error response", error);
+    response = { message: `${error}` };
+  }
+  if (response?.message) {
+    if (buttonInteraction.replied) {
+      buttonInteraction.editReply({
+        content: response.message as string,
+      }); //muss repariert werden
+    } else {
+      buttonInteraction.reply({
+        content: response.message as string,
+        ephemeral: true,
+      });
+    }
+  }
+}
+
+async function handleModalSubmitInteraction(
+  interaction: ModalSubmitInteraction<CacheType>
+) {
+  const modalSubmitInteraction = interaction as ModalSubmitInteraction;
+
+  let response: HandlerResponse = { message: "no response retrieved" };
+
+  try {
+    const modalSubmitType = modalSubmitInteraction.customId.split("-")[0];
+
+    response = await modalHandlers[modalSubmitType](modalSubmitInteraction);
+    console.log(
+      `handler for ${modalSubmitType} returned with response`,
+      response.message
+    );
+
+    if (response.postActions?.length) {
+      response.postActions.forEach((action) => {
+        handlePostAction(action, interaction);
+      });
+    }
+  } catch (error) {
+    console.error("an error occurred. sending error response", error);
+    response.message = `${error}`;
+  }
+  modalSubmitInteraction.reply({
+    content: response.message as string,
+    ephemeral: true,
+  });
+}
+
 export async function changeReply(
-  interaction: CommandInteraction,
+  interaction: Interaction,
   content: HandlerResponseMessage
 ): Promise<void> {
   if (!content) return;
+  if (interaction instanceof AutocompleteInteraction<CacheType>) return;
   try {
     interaction.editReply(content);
   } catch (error) {
@@ -137,7 +224,7 @@ const handlePostAction = async (
     action.action === PostActionType.printLeaderboardFiltered &&
     action.data.leaderboard
   ) {
-    printFilteredLeaderboard(action.data.leaderboard, channel);
+    printLeaderboard(action.data.leaderboard, channel, true);
   } else if (
     action.action === PostActionType.printLeaderboard &&
     action.data.leaderboard

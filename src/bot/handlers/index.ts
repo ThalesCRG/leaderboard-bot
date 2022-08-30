@@ -3,7 +3,14 @@ import {
   createLeaderboardCommand,
   createLeaderboardHandler,
 } from "./create-leaderboard";
-import { createEntryCommand, createEntryHandler } from "./create-entry";
+import {
+  createEntryButtonHandler,
+  createEntryButtonprefix,
+  createEntryCommand,
+  createEntryCommandHandler,
+  createEntryModalPrefix,
+  createEntryModalSubmitHandler,
+} from "./create-entry";
 import {
   deleteLeaderboardCommand,
   deleteLeaderboardHandler,
@@ -27,6 +34,10 @@ import {
   setDescriptionHandler,
 } from "./set-description";
 import { allowenceCommand, allowenceHandler } from "./allowence";
+import {
+  updateLeaderboardCommand,
+  updateLeaderboardHandler,
+} from "./update-leaderboard";
 
 export const commands: Array<CommandLike> = [
   createLeaderboardCommand,
@@ -39,14 +50,15 @@ export const commands: Array<CommandLike> = [
   helpCommand,
   setDescriptionCommand,
   allowenceCommand,
+  updateLeaderboardCommand,
 ];
 
 /**
  * maps the registered command name (e.g. /createleaderboard) to the handler implementation.
  */
-const handlers: { [key: string]: any } = {
+const commandHandlers: { [key: string]: any } = {
   [createLeaderboardCommand.name]: createLeaderboardHandler,
-  [createEntryCommand.name]: createEntryHandler,
+  [createEntryCommand.name]: createEntryCommandHandler,
   [setProtectedCommand.name]: setProtectedHandler,
   [cloneLeaderboardCommand.name]: cloneLeaderboardHandler,
   [deleteLeaderboardCommand.name]: deleteLeaderboardHandler,
@@ -55,6 +67,15 @@ const handlers: { [key: string]: any } = {
   [helpCommand.name]: helpHandler,
   [setDescriptionCommand.name]: setDescriptionHandler,
   [allowenceCommand.name]: allowenceHandler,
+  [updateLeaderboardCommand.name]: updateLeaderboardHandler,
 };
 
-export default handlers;
+export const buttonHandlers: { [key: string]: any } = {
+  [createEntryButtonprefix]: createEntryButtonHandler,
+};
+
+export const modalHandlers: { [key: string]: any } = {
+  [createEntryModalPrefix]: createEntryModalSubmitHandler,
+};
+
+export default commandHandlers;

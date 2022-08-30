@@ -110,6 +110,16 @@ const isPersonAllowed = (
   );
 };
 
+export const isPersonAllowedById = async (
+  leaderboardId: string,
+  userId: string
+): Promise<boolean> => {
+  const leaderboard = await Leaderboard.findById(leaderboardId);
+  if (!leaderboard) return false;
+  if (!leaderboard.protected) return true;
+  return isPersonAllowed(leaderboard, userId);
+};
+
 export async function addEntry(
   model: CreateEntry,
   userId: string
