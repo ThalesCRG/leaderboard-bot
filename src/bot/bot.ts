@@ -75,6 +75,11 @@ export async function initConnection(token: string) {
     console.log("all commands up to date");
   }
 
+  console.log(
+    "The Bot is currently on %d Discord Servers.",
+    (await client.guilds.fetch()).size
+  );
+
   client.on("interactionCreate", handleInteractions);
 }
 
